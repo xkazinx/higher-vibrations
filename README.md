@@ -1,9 +1,12 @@
 - First console:
-cd client
-npm i
+
+cd client<br>
+npm i<br>
 npm start
 
 - Second console:
-cd server 
-npm i
-npm start
+  
+cd server<br>
+npm i<br>
+npm start<br>
+
