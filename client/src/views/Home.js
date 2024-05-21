@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import MenuAppBar from '../components/Navbar.tsx';
+
 // https://www.youtube.com/watch?v=y5NvOade3sk 14:42
 import { Box } from '@mui/material';
 import Button from '@mui/material/Button';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import { SearchBar } from '../components/Navbar.tsx';
+import CircularProgress from '@mui/material/CircularProgress';
+import Grid from '@mui/material/Grid';
 
 export function ButtonUsage() {
   return <Button variant="contained">Hello world</Button>;
@@ -15,7 +17,7 @@ export function ButtonUsage() {
 function Categories()
 {
     const [value, setValue] = React.useState(2);
-    
+
     const handleChange = (val, idx) =>
     {
         setValue(idx);
@@ -39,26 +41,33 @@ function Categories()
     );
 }
 
-function Home()
+function Home({ eventsData, eventsLoaded })
 {
-    const [data, setData] = useState([]);
-    useEffect(() => {
-        axios.get('http://localhost:8081/')
-        .then(res => setData(res.data))
-        .catch(err => console.log(err));
-    });
-
+    
     return (
-        <div>
-            <MenuAppBar/>
+        <div >
             <Box sx={{ paddingTop: '3vh' }}></Box>
             <Box sx={{ paddingLeft: '5vw', paddingRight: '5vw' }}>  
                 <SearchBar></SearchBar>
-                <Box
-                >
-                        <Categories></Categories>
+                <Box>
+                    <Categories></Categories>
                 </Box>
-                
+                {
+                    eventsLoaded == true ?
+                    (<Grid>
+
+                    </Grid>)
+                    :
+                    (<Grid
+                        container
+                        direction="row"
+                        justifyContent="center"
+                        alignItems="stretch"
+                        sx={{ paddingTop: '30vh' }}
+                        >
+                            <CircularProgress></CircularProgress>
+                    </Grid>)
+                }
             </Box>
         </div>
     );

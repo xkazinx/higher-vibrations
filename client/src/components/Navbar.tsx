@@ -5,13 +5,11 @@ import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
 import Logo from '../assets/logo.png';
 import FlagAR  from '../assets/flag-ar.png';
 import FlagCL  from '../assets/flag-cl.png';
@@ -20,10 +18,17 @@ import SearchIcon from '@mui/icons-material/Search';
 import { styled, alpha } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import { useRef, useEffect, useState } from 'react';
+import Cookies from 'js-cookie';
+import CircularProgress from '@mui/material/CircularProgress';
+import { makeStyles } from "@material-ui/core/styles";
+import { useNavigate } from "react-router-dom";
 
 //const pages = ['Products', 'Pricing', 'Blog'];
 const pages = [];
+
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+
 const countries = [
   {
     name: 'Chile',
@@ -34,24 +39,6 @@ const countries = [
     image: FlagAR,
   }
 ];
-
-let current_country_idx = 0;
-
-// From server
-const current_country_name = 'Argentina';
-
-// Find country in list of countries
-countries.every((value, idx, arr) => 
-{
-  console.log(value.name);
-  if(value.name == current_country_name)
-  {
-    current_country_idx = idx;
-    return false;
-  }
-
-  return true;
-});
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -111,7 +98,16 @@ export function SearchBar() {
   );
 }
 
-function ResponsiveAppBar() {
+function Navbar({ userData, onCountryLoaded, countryLoaded, countryIdx }) {
+  const router = useNavigate();
+
+  /*useEffect(() => {
+    if(app_data.length == 0)
+      return;
+    
+    setAppData(app_data);
+  }, [app_data]);*/
+  
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const [anchorElCountries, setAnchorElCountries] = React.useState<null | HTMLElement>(null);
@@ -126,6 +122,10 @@ function ResponsiveAppBar() {
     setAnchorElCountries(event.currentTarget);
   };
 
+  const anchorElContriesOnChange = (ev) => {
+    console.log(ev);
+  };
+
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
   };
@@ -134,8 +134,20 @@ function ResponsiveAppBar() {
     setAnchorElUser(null);
   };
 
-  const handleCloseCountriesMenu = () => {
+  const handleCloseCountriesMenu = (ev) => {
     setAnchorElCountries(null);
+  };
+
+  const handleClickCountriesMenu = (ev, value) => {
+    handleCloseCountriesMenu(ev);
+    
+    onCountryLoaded(value);
+
+    Cookies.set('country_idx', value);
+  };
+
+  const handleClickLogin = () => {
+    router('/login');
   };
 
   return (
@@ -227,9 +239,19 @@ function ResponsiveAppBar() {
 
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Cambiar pais">
+              {
+              countryLoaded == false ?
+              (
+                <IconButton>
+                  <CircularProgress/>
+                </IconButton>
+              )
+              : (
               <IconButton onClick={handleOpenCountriesMenu} sx={{ p: 0 }} sx={{ width: '50%', height: '50%' }}>
-                <Avatar alt={countries[current_country_idx].name} src={countries[current_country_idx].image} />
+                <Avatar alt={countries[countryIdx].name} src={countries[countryIdx].image} />
               </IconButton>
+              )
+            }
             </Tooltip>
             <Menu
               sx={{ mt: '45px' }}
@@ -247,8 +269,8 @@ function ResponsiveAppBar() {
               open={Boolean(anchorElCountries)}
               onClose={handleCloseCountriesMenu}
             >
-              {countries.map((country) => (
-                <MenuItem dense={true} key={country.name} onClick={handleCloseCountriesMenu} sx={{ width: '200px' }} disableGutters>
+              {countries.map((country, idx) => (
+                <MenuItem dense={true} value={idx} key={idx} onClick={(event) => handleClickCountriesMenu(event, idx)} sx={{ width: '200px' }} disableGutters>
                   <IconButton sx={{ p: 0 }} sx={{ width: '50%', height: '50%' }}>
                     <Avatar alt={country.name} src={country.image} />
                   </IconButton>
@@ -259,35 +281,52 @@ function ResponsiveAppBar() {
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Open settings">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar>
-                 <AccountCircle sx={{ color: '#a83279', width: '100%', height: '100%' }} />
-                </Avatar>
-              </IconButton>
-            </Tooltip>
-            <Menu
-              sx={{ mt: '45px' }}
-              id="menu-appbar"
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-            >
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography textAlign="center">{setting}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
+            {
+              userData == null ? 
+              (
+                <Tooltip title={ "Log In" }>
+                  <IconButton onClick={handleClickLogin}>
+                    <Avatar>
+                    <AccountCircle sx={{ color: '#a83279', width: '100%', height: '100%' }} />
+                    </Avatar>
+                  </IconButton>
+                </Tooltip>
+              )
+              :
+              (
+                <span>
+                  <Tooltip title={ "Open settings" }>
+                    <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                      <Avatar>
+                      <AccountCircle sx={{ color: '#a83279', width: '100%', height: '100%' }} />
+                      </Avatar>
+                    </IconButton>
+                  </Tooltip>
+                  <Menu
+                    sx={{ mt: '45px' }}
+                    id="menu-appbar"
+                    anchorEl={anchorElUser}
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    keepMounted
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    open={Boolean(anchorElUser)}
+                    onClose={handleCloseUserMenu}
+                  >
+                    {settings.map((setting) => (
+                      <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                        <Typography textAlign="center">{setting}</Typography>
+                      </MenuItem>
+                    ))}
+                  </Menu>
+              </span>
+              )
+            }
           </Box>
         </Toolbar>
       </Container>
@@ -295,4 +334,4 @@ function ResponsiveAppBar() {
   );
 }
 
-export default ResponsiveAppBar;
+export default Navbar;
