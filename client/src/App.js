@@ -1,6 +1,8 @@
 //import logo from './logo.svg';
 import './App.css';
 import Home from './views/Home';
+import SignIn from './views/SignIn';
+import Register from './views/Register';
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
 //import 'bootstrap/dist/css/bootstrap.min.css';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -23,7 +25,8 @@ function App() {
   const [countryIdx, setCountryIdx] = useState(null);
   const [countryLoaded, setCountryLoaded] = useState(false);
   
-  const [userData, setUserData] = useState([]);
+  const [userData, setUserData] = useState(null);
+  const [userLoaded, setUserLoaded] = useState(false);
 
   const initialized = useRef(false)
 
@@ -32,14 +35,29 @@ function App() {
       return;
     
     initialized.current = true
-
+    
     fetchData();
   }, []);
 
-  useEffect(() => {
+  /*useEffect(() => {
     console.log(countryLoaded)
-  }, [countryLoaded]);
+  }, [countryLoaded]);*/
 
+  // OnLogin
+  // localStorage.setItem('user', response.data)
+
+  // OnGetData
+  /*const loggedInUser = localStorage.getItem("user");
+    if (loggedInUser) {
+      const foundUser = JSON.parse(loggedInUser);
+      setUser(foundUser);
+    }*/
+
+  // OnLogOut
+  // localStorage.removeItem("user")
+  // or, for all data
+  // localStorage.clear();
+  
   const fetchData = async () => {
    // console.log("fetchData");
     let country_idx = -1;
@@ -71,6 +89,7 @@ function App() {
       .then(res => 
         {
           setUserData(res.data.user);
+          setUserLoaded(true);
           onCountryLoaded(res.data.country_idx);
         })
       .catch(err => console.log(err));
@@ -80,7 +99,7 @@ function App() {
 
     setCountryIdx(country_idx);
     setCountryLoaded(true);
-    console.log(countryLoaded);
+    setEventsLoaded(false);
 
     let data =
     {
@@ -100,9 +119,11 @@ function App() {
     <BrowserRouter>
       <div style={{ height: '100vh' }}>
         <CssBaseline/>
-        <MenuAppBar userData={userData} onCountryLoaded={onCountryLoaded} countryLoaded={countryLoaded} countryIdx={countryIdx} />
+        <MenuAppBar userData={userData} userLoaded={userLoaded} onCountryLoaded={onCountryLoaded} countryLoaded={countryLoaded} countryIdx={countryIdx} />
         <Routes>
             <Route path='/' element={<Home eventsData={eventsData} eventsLoaded={eventsLoaded}/> } />
+            <Route path='/signin' element={<SignIn/> } />
+            <Route path='/register' element={<Register /> } />
         </Routes>
       </div>
     </BrowserRouter>

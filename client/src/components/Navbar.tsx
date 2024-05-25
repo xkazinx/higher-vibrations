@@ -98,7 +98,7 @@ export function SearchBar() {
   );
 }
 
-function Navbar({ userData, onCountryLoaded, countryLoaded, countryIdx }) {
+function Navbar({ userData, userLoaded, onCountryLoaded, countryLoaded, countryIdx }) {
   const router = useNavigate();
 
   /*useEffect(() => {
@@ -147,7 +147,7 @@ function Navbar({ userData, onCountryLoaded, countryLoaded, countryIdx }) {
   };
 
   const handleClickLogin = () => {
-    router('/login');
+    router('/signin');
   };
 
   return (
@@ -240,7 +240,7 @@ function Navbar({ userData, onCountryLoaded, countryLoaded, countryIdx }) {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Cambiar pais">
               {
-              countryLoaded == false ?
+              countryLoaded === false ?
               (
                 <IconButton>
                   <CircularProgress/>
@@ -282,49 +282,56 @@ function Navbar({ userData, onCountryLoaded, countryLoaded, countryIdx }) {
 
           <Box sx={{ flexGrow: 0 }}>
             {
-              userData == null ? 
-              (
-                <Tooltip title={ "Log In" }>
-                  <IconButton onClick={handleClickLogin}>
-                    <Avatar>
-                    <AccountCircle sx={{ color: '#a83279', width: '100%', height: '100%' }} />
-                    </Avatar>
-                  </IconButton>
-                </Tooltip>
-              )
+              userLoaded == false ? 
+              (<IconButton>
+                <CircularProgress/>
+              </IconButton>)
               :
               (
-                <span>
-                  <Tooltip title={ "Open settings" }>
-                    <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                userData == null ? 
+                (
+                  <Tooltip title={ "Log In" }>
+                    <IconButton onClick={handleClickLogin}>
                       <Avatar>
                       <AccountCircle sx={{ color: '#a83279', width: '100%', height: '100%' }} />
                       </Avatar>
                     </IconButton>
                   </Tooltip>
-                  <Menu
-                    sx={{ mt: '45px' }}
-                    id="menu-appbar"
-                    anchorEl={anchorElUser}
-                    anchorOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
-                    }}
-                    keepMounted
-                    transformOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
-                    }}
-                    open={Boolean(anchorElUser)}
-                    onClose={handleCloseUserMenu}
-                  >
-                    {settings.map((setting) => (
-                      <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                        <Typography textAlign="center">{setting}</Typography>
-                      </MenuItem>
-                    ))}
-                  </Menu>
-              </span>
+                )
+                :
+                (
+                  <span>
+                    <Tooltip title={ "Open settings" }>
+                      <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                        <Avatar>
+                        <AccountCircle sx={{ color: '#a83279', width: '100%', height: '100%' }} />
+                        </Avatar>
+                      </IconButton>
+                    </Tooltip>
+                    <Menu
+                      sx={{ mt: '45px' }}
+                      id="menu-appbar"
+                      anchorEl={anchorElUser}
+                      anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                      }}
+                      keepMounted
+                      transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                      }}
+                      open={Boolean(anchorElUser)}
+                      onClose={handleCloseUserMenu}
+                    >
+                      {settings.map((setting) => (
+                        <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                          <Typography textAlign="center">{setting}</Typography>
+                        </MenuItem>
+                      ))}
+                    </Menu>
+                </span>
+                )
               )
             }
           </Box>
