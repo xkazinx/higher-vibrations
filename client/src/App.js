@@ -3,6 +3,7 @@ import './App.css';
 import Home from './views/Home';
 import SignIn from './views/SignIn';
 import Register from './views/Register';
+import VerifyEmail from './views/VerifyEmail';
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
 //import 'bootstrap/dist/css/bootstrap.min.css';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -124,6 +125,7 @@ function App() {
             <Route path='/' element={<Home eventsData={eventsData} eventsLoaded={eventsLoaded}/> } />
             <Route path='/signin' element={<SignIn/> } />
             <Route path='/register' element={<Register /> } />
+            <Route path='/verify_email' element={<VerifyEmail /> } />
         </Routes>
       </div>
     </BrowserRouter>

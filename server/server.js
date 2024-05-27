@@ -16,7 +16,8 @@ const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: 'root',
-    database: 'tuticket_new'
+    database: 'tuticket_new',
+    port: 3305
 });
 
 let _sessions = [];
@@ -103,14 +104,19 @@ app.post('/register/action', (req, res) => {
         errors.password = 1;
     }
 
-    if(errors.keys().length > 0) {
+    if(Object.keys(errors).length > 0) {
         return res.json(errors);    
     }
 
-    db.query("INSERT INTO `users` (firstName, lastName, email, password) VALUES(?, ?, ?, ?)",
-        [firstName, lastName, email, password], (err, res) => {
-        if(err) return res.json({ message: "query error" });
-        
+    db.query("INSERT INTO `users` (firstName, lastName, email, password) VALUES(?, ?, ?, ?);",
+        [firstName, lastName, email, password], (err, qres) => {
+        if(err) 
+            {
+                console.log(err);
+                return res.json({ message: err.code });
+            }
+
+            console.log("query succees");
         return res.json({});
     });
 });

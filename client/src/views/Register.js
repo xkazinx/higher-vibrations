@@ -97,6 +97,8 @@ function Register() {
                 setErrorData(res.data.errors);
                 return;
             }
+
+            router('/verify_email');
             })
         .catch(err => 
             {
