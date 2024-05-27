@@ -290,7 +290,7 @@ function Navbar({ userData, userLoaded, onCountryLoaded, countryLoaded, countryI
               (
                 userData == null ? 
                 (
-                  <Tooltip title={ "Log In" }>
+                  <Tooltip title={ "Ingresar" }>
                     <IconButton onClick={handleClickLogin}>
                       <Avatar>
                       <AccountCircle sx={{ color: '#a83279', width: '100%', height: '100%' }} />

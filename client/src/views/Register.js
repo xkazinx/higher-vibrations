@@ -15,6 +15,11 @@ import Container from '@mui/material/Container';
 import { useNavigate } from "react-router-dom";
 import Copyright from '../components/Copyright';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useRef, useEffect, useState } from 'react';
+import axios from 'axios';
+import { common } from '../common/common.mjs'
+import { CircularProgress } from '@mui/material';
+import Error from '../components/Error'
 
 const theme = createTheme();
   
@@ -40,12 +45,64 @@ const useStyles = styled((theme) => ({
 
 function Register() {
   const router = useNavigate();
-  const classes = useStyles();
+  const classes = useStyles(null);
+
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const [errorData, setErrorData] = useState({});
 
   const handleOnClickSignIn = (event) =>
     {
         event.preventDefault();
         router('/signin');
+    };
+
+    /*useEffect(() => 
+    {
+        console.log(formErrorData);
+    }, formErrorData);*/
+
+    const onRegister = async (event) =>
+    {
+        event.preventDefault();
+
+        const form_data = new FormData(event.currentTarget);
+
+        const terms = form_data.get('acceptTerms');
+        if(!terms)
+        {
+            setErrorData({ acceptTerms: 1 })
+            return;
+        }
+        else
+        {
+            setErrorData({});
+        }
+
+        const data = {
+            email: form_data.get('email'),
+            password: form_data.get('password'),
+            firstName: form_data.get('firstName'),
+            lastName: form_data.get('lastName'),
+        };
+
+        setIsCreatingAccount(true);
+       
+        await axios.post(common.kDomain + 'register/action', data)
+        .then(res => 
+            {
+            setIsCreatingAccount(false);
+            
+            if(res.data.errors?.length > 0)
+            {
+                setErrorData(res.data.errors);
+                return;
+            }
+            })
+        .catch(err => 
+            {
+                setIsCreatingAccount(false);
+                console.log(err)
+            });
     };
 
   return (
@@ -69,7 +126,7 @@ function Register() {
             Registrarse
             </Typography>
         </Box>
-        <form className={classes.form} noValidate>
+        <Box component="form" onSubmit={onRegister} className={classes.form} noValidate>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -81,7 +138,12 @@ function Register() {
                 id="firstName"
                 label="Nombre"
                 autoFocus
+                disabled={isCreatingAccount}
               />
+              <Error 
+                disabled={typeof errorData.firstName === 'undefined'}
+                text={'*Ingresa un nombre válido.'}>
+              </Error>
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -92,7 +154,12 @@ function Register() {
                 label="Apellido"
                 name="lastName"
                 autoComplete="lname"
+                disabled={isCreatingAccount}
               />
+              <Error 
+                disabled={typeof errorData.lastName === 'undefined'}
+                text={'*Ingresa un apellido válido.'}>
+              </Error>
             </Grid>
             <Grid item xs={12}>
               <TextField
@@ -103,6 +170,7 @@ function Register() {
                 label="Email"
                 name="email"
                 autoComplete="email"
+                disabled={isCreatingAccount}
               />
             </Grid>
             <Grid item xs={12}>
@@ -115,13 +183,23 @@ function Register() {
                 type="password"
                 id="password"
                 autoComplete="current-password"
+                disabled={isCreatingAccount}
               />
+              <Error 
+                disabled={typeof errorData.password === 'undefined'}
+                text={'*Ingresa una contraseña de al menos 8 caracteres.'}>
+              </Error>
             </Grid>
             <Grid item xs={12}>
               <FormControlLabel
-                control={<Checkbox value="allowExtraEmails" color="primary" />}
+                control={<Checkbox 
+                name="acceptTerms" value='1' color="primary" />}
                 label="Acepto los términos y condiciones de uso."
               />
+              <Error 
+                disabled={typeof errorData.acceptTerms === 'undefined'}
+                text={'*Tienes que aceptar los términos y condiciones de uso para continuar.'}>
+              </Error>
             </Grid>
           </Grid>
           <Button
@@ -130,8 +208,14 @@ function Register() {
             variant="contained"
             color="primary"
             className={classes.submit}
+            disabled={isCreatingAccount}
           >
-            Registrarse
+            {
+                isCreatingAccount ?
+                (<CircularProgress size={24}></CircularProgress>)
+                :
+                (<span>Registrarse</span>)
+              }
           </Button>
           <Grid container justifyContent="flex-end">
             <Grid item>
@@ -140,7 +224,7 @@ function Register() {
               </Link>
             </Grid>
           </Grid>
-        </form>
+        </Box>
       </div>
       </Box>
       <Box mt={5}>

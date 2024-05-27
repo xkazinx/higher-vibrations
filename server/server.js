@@ -75,8 +75,44 @@ app.post('/login', (req, res) => {
 
     // generate a random UUID as the session token
     const sessionToken = uuid.v4()
+});
 
+app.post('/register/action', (req, res) => {
+    const { firstName, lastName, email, password } = req.body;
 
+    console.log(firstName);
+    console.log(lastName);
+    console.log(email);
+    console.log(password);
+
+    let errors = {};
+
+    if(firstName.length > 5) {
+        errors.firstName = 1;
+    }
+
+    if(lastName.length > 5) {
+        errors.firstName = 1;
+    }
+
+    if(email.length > 5) {
+        errors.email = 1;
+    }
+
+    if(password.length > 5) {
+        errors.password = 1;
+    }
+
+    if(errors.keys().length > 0) {
+        return res.json(errors);    
+    }
+
+    db.query("INSERT INTO `users` (firstName, lastName, email, password) VALUES(?, ?, ?, ?)",
+        [firstName, lastName, email, password], (err, res) => {
+        if(err) return res.json({ message: "query error" });
+        
+        return res.json({});
+    });
 });
 
 
