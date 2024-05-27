@@ -20,6 +20,7 @@ import axios from 'axios';
 import { common } from '../common/common.mjs'
 import { CircularProgress } from '@mui/material';
 import Error from '../components/Error'
+import Cookies from 'js-cookie';
 
 const theme = createTheme();
   
@@ -43,7 +44,7 @@ const useStyles = styled((theme) => ({
   },
 }));
 
-function Register() {
+function Register({ setUserData }) {
   const router = useNavigate();
   const classes = useStyles(null);
 
@@ -92,11 +93,21 @@ function Register() {
             {
             setIsCreatingAccount(false);
             
-            if(res.data.errors?.length > 0)
+            console.log(res.data);
+            if(typeof res.data.errors !== 'undefined')
             {
                 setErrorData(res.data.errors);
                 return;
             }
+
+            setUserData(res.data.user);
+            console.log("register/action:")
+            console.log(res.data.user);
+
+            Cookies.set('sessionId', res.data.user.sessionId,
+               { expires: 2147483647 });
+            Cookies.set('email', res.data.user.email,
+               { expires: 2147483647 });
 
             router('/verify_email');
             })
@@ -174,6 +185,10 @@ function Register() {
                 autoComplete="email"
                 disabled={isCreatingAccount}
               />
+              <Error 
+                disabled={typeof errorData.email === 'undefined'}
+                text={'*Ingresa un email válido.'}>
+              </Error>
             </Grid>
             <Grid item xs={12}>
               <TextField

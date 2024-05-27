@@ -52,7 +52,7 @@ function SignIn() {
       password: form_data.get('password'),
     };
 
-    await axios.post(common.kDomain + 'auth/', data)
+    await axios.post(common.kDomain + 'signin/action', data)
       .then(res => 
         {
           console.log("Login success");

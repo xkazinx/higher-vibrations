@@ -23,11 +23,17 @@ import Cookies from 'js-cookie';
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles } from "@material-ui/core/styles";
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
+import { common } from '../common/common.mjs'
 
 //const pages = ['Products', 'Pricing', 'Blog'];
 const pages = [];
 
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const settings = [
+  { text: 'Perfil', url: 'dashboard/profile', role: common.kUserRole }, 
+  { text: 'Dashboard', url: 'dashboard/', role: common.kOrganizerRole },
+  { text: "Cerrar sesión", url: 'logout/', role: common.kUserRole }
+];
 
 const countries = [
   {
@@ -98,7 +104,7 @@ export function SearchBar() {
   );
 }
 
-function Navbar({ userData, userLoaded, onCountryLoaded, countryLoaded, countryIdx }) {
+function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoaded, countryIdx }) {
   const router = useNavigate();
 
   /*useEffect(() => {
@@ -132,6 +138,31 @@ function Navbar({ userData, userLoaded, onCountryLoaded, countryLoaded, countryI
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
+  }
+  
+  const handleClickUserMenu = async (ev, url) => {
+    setAnchorElUser(null);
+
+    if(url == 'logout/')
+    {
+      const data = {
+        sessionId: userData.sessionId,
+        email: userData.email
+      };
+
+      await axios.post(common.kDomain + url, data)
+      .then(res => 
+        {
+          setUserData(null);
+          
+         // localStorage.removeItem('user');
+
+          router("/");
+        })
+      .catch(err => console.log(err));
+    }
+    else 
+      router(url);
   };
 
   const handleCloseCountriesMenu = (ev) => {
@@ -143,7 +174,7 @@ function Navbar({ userData, userLoaded, onCountryLoaded, countryLoaded, countryI
     
     onCountryLoaded(value);
 
-    Cookies.set('country_idx', value);
+    Cookies.set('countryIdx', value, { expires: 2147483647 });
   };
 
   const handleClickLogin = () => {
@@ -290,6 +321,7 @@ function Navbar({ userData, userLoaded, onCountryLoaded, countryLoaded, countryI
               (
                 userData == null ? 
                 (
+                  <span>
                   <Tooltip title={ "Ingresar" }>
                     <IconButton onClick={handleClickLogin}>
                       <Avatar>
@@ -297,6 +329,7 @@ function Navbar({ userData, userLoaded, onCountryLoaded, countryLoaded, countryI
                       </Avatar>
                     </IconButton>
                   </Tooltip>
+                  </span>
                 )
                 :
                 (
@@ -324,11 +357,19 @@ function Navbar({ userData, userLoaded, onCountryLoaded, countryLoaded, countryI
                       open={Boolean(anchorElUser)}
                       onClose={handleCloseUserMenu}
                     >
-                      {settings.map((setting) => (
-                        <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                          <Typography textAlign="center">{setting}</Typography>
-                        </MenuItem>
-                      ))}
+                      {settings.map((setting, idx) => (
+                          setting.role > userData.role ?
+                          (<span></span>) :
+                          (
+                            //#todo role only displays dashboard
+                            <MenuItem key={idx} onClick={(e) => {
+                              handleClickUserMenu(e, setting.url)
+                            }}>
+                              <Typography textAlign="center">{setting.text}</Typography>
+                            </MenuItem>
+                          )
+                      ))
+                    }
                     </Menu>
                 </span>
                 )

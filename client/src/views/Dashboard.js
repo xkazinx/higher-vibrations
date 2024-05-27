@@ -1,15 +1,12 @@
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { useNavigate } from "react-router-dom";
 
 // TODO remove, this demo shouldn't need to reset the theme.
 
-function VerifyEmail({ userData }) {
+function Dashboard({ userData }) {
   const router = useNavigate();
 
   const handleOnClickRegister = () => {
@@ -27,19 +24,10 @@ function VerifyEmail({ userData }) {
             alignItems: 'center',
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-            <LockOutlinedIcon />
-          </Avatar>
-          <Typography component="h1" variant="h5" pb={5}>
-            Verificar email
-          </Typography>
-          <Box sx={{ textAlign: 'center' }}>
-            Hemos enviado un correo a { userData == null ? '[mail]' : userData.email },<br/>
-            haz click en el enlace enviado para continuar
-          </Box>
+          Dashboard
         </Box>
       </Container>
   );
 }
 
-export default VerifyEmail;
+export default Dashboard;

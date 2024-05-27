@@ -4,6 +4,9 @@ import Home from './views/Home';
 import SignIn from './views/SignIn';
 import Register from './views/Register';
 import VerifyEmail from './views/VerifyEmail';
+import Dashboard from './views/Dashboard';
+import Profile from './views/DashboardProfile';
+
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
 //import 'bootstrap/dist/css/bootstrap.min.css';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -61,29 +64,38 @@ function App() {
   
   const fetchData = async () => {
    // console.log("fetchData");
-    let country_idx = -1;
-    if(Cookies.get('country_idx') != undefined)
+    let countryIdx = -1;
+    let email = -1;
+    let sessionId = -1;
+
+    const localCountryIdx = Cookies.get("countryIdx");
+    //const localCountryIdx = localStorage.getItem("countryIdx");
+    if(localCountryIdx)
     {
-      country_idx = Cookies.get('country_idx');
+      countryIdx = localCountryIdx;
     }
 
-    let mail = -1;
-    if(Cookies.get('mail') != undefined)
-    {
-      mail = Cookies.get('mail');
+    const localEmail = Cookies.get("email");
+    const localSessionId = Cookies.get("sessionId");
+
+    if(localEmail) {  
+      console.log("Found localEmail");
+      email = localEmail;
     }
 
-    let session_id = -1;
-    if(Cookies.get('session_id') != undefined)
+    if(localSessionId) {
+      sessionId = localSessionId;
+    }
+    else
     {
-      session_id = Cookies.get('session_id');
+      console.log("localSessionId not found");
     }
 
     let data =
     {
-        country_idx: country_idx,
-        session_id: session_id,
-        mail: mail,
+        countryIdx: countryIdx,
+        sessionId: sessionId,
+        email: email,
     };
     
     await axios.post(common.kDomain + 'entry/', data)
@@ -91,20 +103,30 @@ function App() {
         {
           setUserData(res.data.user);
           setUserLoaded(true);
-          onCountryLoaded(res.data.country_idx);
+          onCountryLoaded(res.data.countryIdx);
+
+          console.log("entry/");
+          console.log(res.data);
+          // #todo test
+          if(res.data.user == null)
+          {
+            // localStorage.removeItem('user');
+            Cookies.remove('sessionId');
+            Cookies.remove('email');
+          }
         })
       .catch(err => console.log(err));
   };
 
-  const onCountryLoaded = async (country_idx) => {
+  const onCountryLoaded = async (countryIdx) => {
 
-    setCountryIdx(country_idx);
+    setCountryIdx(countryIdx);
     setCountryLoaded(true);
     setEventsLoaded(false);
 
     let data =
     {
-        country_idx: country_idx,
+      countryIdx: countryIdx,
     };
 
     await axios.post(common.kDomain + 'events/', data)
@@ -120,12 +142,14 @@ function App() {
     <BrowserRouter>
       <div style={{ height: '100vh' }}>
         <CssBaseline/>
-        <MenuAppBar userData={userData} userLoaded={userLoaded} onCountryLoaded={onCountryLoaded} countryLoaded={countryLoaded} countryIdx={countryIdx} />
+        <MenuAppBar userData={userData} setUserData={setUserData} userLoaded={userLoaded} onCountryLoaded={onCountryLoaded} countryLoaded={countryLoaded} countryIdx={countryIdx} />
         <Routes>
             <Route path='/' element={<Home eventsData={eventsData} eventsLoaded={eventsLoaded}/> } />
             <Route path='/signin' element={<SignIn/> } />
-            <Route path='/register' element={<Register /> } />
-            <Route path='/verify_email' element={<VerifyEmail /> } />
+            <Route path='/register' element={<Register setUserData={setUserData} /> } />
+            <Route path='/verify_email' element={<VerifyEmail userData={userData} /> } />
+            <Route path='/dashboard' element={<Dashboard userData={userData} /> } />
+            <Route path='/dashboard/profile' element={<Profile userData={userData} /> } />
         </Routes>
       </div>
     </BrowserRouter>
