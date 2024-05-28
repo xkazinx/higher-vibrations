@@ -4,6 +4,7 @@ import Home from './views/Home';
 import SignIn from './views/SignIn';
 import Register from './views/Register';
 import VerifyEmail from './views/VerifyEmail';
+import VerifyEmailAction from './views/VerifyEmailAction';
 import Dashboard from './views/Dashboard';
 import Profile from './views/DashboardProfile';
 
@@ -148,6 +149,7 @@ function App() {
             <Route path='/signin' element={<SignIn/> } />
             <Route path='/register' element={<Register setUserData={setUserData} /> } />
             <Route path='/verify_email' element={<VerifyEmail userData={userData} /> } />
+            <Route path='/verify_email/action/:sessionId' element={<VerifyEmailAction userData={userData} setUserData={setUserData} /> } />
             <Route path='/dashboard' element={<Dashboard userData={userData} /> } />
             <Route path='/dashboard/profile' element={<Profile userData={userData} /> } />
         </Routes>

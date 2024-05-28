@@ -12,24 +12,28 @@ app.use(cors());
 app.use(bodyParser.json())
 app.use(cookieParser())
 
-const db = mysql.createConnection({
+const db_auth = 
+{
     host: 'localhost',
     user: 'root',
     password: 'root',
     database: 'tuticket_new',
     port: 3305
-});
+};
+
+const db = mysql.createConnection(db_auth);
 
 let _sessions = [];
 
-function GetUser(sessionId)
+async function GetUser(sessionId, req, callback) 
 {
     const idx = _sessions.indexOf(sessionId);
     if(idx >= 0) {
         return _sessions[sessionId];
     }
 
-    db.query("SELECT * FROM `users` WHERE sessionId = ?;",
+    let data = null;
+    await db.query("SELECT * FROM `users` WHERE sessionId = ?;",
             [sessionId], (err, qres) => {
             if(err) 
             {
@@ -39,25 +43,23 @@ function GetUser(sessionId)
 
             if(qres.length > 0) {
 
-                let data = {
-                    email: email,
-                    verified: qres.verified,
+                data = {
+                    email: qres[0].email,
+                    verified: qres[0].verified,
                     sessionId: sessionId,
-                    firstName: qres.firstName,
-                    lastName: qres.lastName,
-                    role: qres.role
+                    firstName: qres[0].firstName,
+                    lastName: qres[0].lastName,
+                    role: qres[0].role
                 };
 
                 _sessions[sessionId] = data;
-                req.session_id = sessionId;
+                //req.session_id = sessionId;
+            }
 
-                return data;
-            }
-            else
-            {
-                return null;
-            }
+            callback(data);
         });
+    
+    callback(data);
 }
 
 app.post('/entry', (req, res) => {
@@ -111,6 +113,7 @@ app.post('/entry', (req, res) => {
     }
     else
     {
+        //req.drop();
         return res.json({
             ...data,
             user: null
@@ -188,34 +191,39 @@ app.post('/register/action', (req, res) => {
     });
 });
 
-app.post('/verify_email/debug', (req, res) => {
-    let user = GetUser(req.session_id);
-    if(!user) {
-        return res.status(401).end();
-    }
-
-    user.verified = 1;
-
-    db.query("UPDATE `users` SET verified = ? WHERE sessionId = ?);",
-        [user.verified, req.session_id], (err, qres) => {
-        if(err) 
-        {
-            console.log(err);
+app.post('/verify_email/action', async (req, res) => {
+    const { sessionId } = req.body;
+    //req.session_id = sessionId;
+    await GetUser(sessionId, req, async (user) => 
+    {
+        console.log('/verify_email/action/:sessionId'   );
+        if(!user) {
+            console.log("!user");
             return res.status(401).end();
         }
+    
+        user.verified = 1;
+    
+            await db.query("UPDATE `users` SET verified = ? WHERE sessionId = ?;",
+                [user.verified, sessionId], (err, qres) => {
+                if(err) 
+                {
+                    console.log(err);
+                    return res.status(401).end();
+                }
 
-        return res.json({
-            user: user
-        });
+                console.log("verified!");
+                /*return res.json({
+                    user: user
+                });*/
+            });
     });
-
-    return res.json({});
 });
 
 // #todo add parameter with id
-app.post('/verify_email/action', (req, res) => {
+/*app.post('/verify_email/action', (req, res) => {
     return res.json([{ title: 'title', price: 500 }]);
-});
+});*/
 
 app.post('/dashboard/profile', (req, res) => {
     return res.json([{ title: 'title', price: 500 }]);

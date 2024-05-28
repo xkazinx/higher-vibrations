@@ -4,6 +4,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import { useNavigate } from "react-router-dom";
 
@@ -14,6 +15,10 @@ function VerifyEmail({ userData }) {
 
   const handleOnClickRegister = () => {
     router('/register');
+  };
+
+  const onClickVerifyEmail = () => {
+    router('/verify_email/action/' + userData.sessionId);
   };
 
   return (
@@ -36,6 +41,14 @@ function VerifyEmail({ userData }) {
           <Box sx={{ textAlign: 'center' }}>
             Hemos enviado un correo a { userData == null ? '[mail]' : userData.email },<br/>
             haz click en el enlace enviado para continuar
+          </Box>
+          <Box pt={2}>
+            {
+              process.env.NODE_ENV == 'development' ?
+              (<Button
+                variant="contained" color="primary" onClick={onClickVerifyEmail}>Emular verificación de email</Button>) :
+              (<span></span>)
+            }
           </Box>
         </Box>
       </Container>
