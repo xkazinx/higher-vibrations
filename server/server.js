@@ -1,5 +1,8 @@
 import express from 'express';
-import mysql from 'mysql';
+//import mysql from 'mysql';
+//import mysql from 'promise-mysql';
+import mysql from 'mysql2/promise';
+
 import cors from 'cors';
 import { common } from '../common/common.mjs';
 import { v4 as uuid } from 'uuid';
@@ -21,11 +24,14 @@ const db_auth =
     port: 3305
 };
 
-const db = mysql.createConnection(db_auth);
+async function dbConnection()
+{
+    return await mysql.createConnection(db_auth);
+}
 
 let _sessions = [];
 
-async function GetUser(sessionId, req, callback) 
+async function GetUser(sessionId, req) 
 {
     const idx = _sessions.indexOf(sessionId);
     if(idx >= 0) {
@@ -33,36 +39,31 @@ async function GetUser(sessionId, req, callback)
     }
 
     let data = null;
-    await db.query("SELECT * FROM `users` WHERE sessionId = ?;",
-            [sessionId], (err, qres) => {
-            if(err) 
-            {
-                console.log(err);
-                return null;
-            }
-
-            if(qres.length > 0) {
-
-                data = {
-                    email: qres[0].email,
-                    verified: qres[0].verified,
-                    sessionId: sessionId,
-                    firstName: qres[0].firstName,
-                    lastName: qres[0].lastName,
-                    role: qres[0].role
-                };
-
-                _sessions[sessionId] = data;
-                //req.session_id = sessionId;
-            }
-
-            callback(data);
-        });
+    let db = await dbConnection();
+    let [qres, fields] = await db.execute("SELECT * FROM `users` WHERE sessionId = ?;"
+        , [sessionId]
+    );
     
-    callback(data);
+    if(qres.length > 0) {
+
+        data = {
+            email: qres[0].email,
+            verified: qres[0].verified,
+            sessionId: sessionId,
+            firstName: qres[0].firstName,
+            lastName: qres[0].lastName,
+            role: qres[0].role
+        };
+
+        _sessions[sessionId] = data;
+        req.session_id = sessionId;
+    }
+
+    await db.end();
+    return data;
 }
 
-app.post('/entry', (req, res) => {
+app.post('/entry', async (req, res) => {
     let { countryIdx, sessionId, email } = req.body;
 
     let guest = sessionId == -1 || email == -1;
@@ -71,54 +72,44 @@ app.post('/entry', (req, res) => {
         countryIdx = common.kDefaultCountryIndex;
     }
 
-    let data = { countryIdx: countryIdx };
     if(!guest)
     {
         console.log("user is not guest, selecting from db...");
-        db.query("SELECT * FROM `users` WHERE sessionId = ? AND email = ?;",
-            [sessionId,  email], (err, qres) => {
-            if(err) 
-            {
-                console.log(err);
-                return res.status(401).end();
+    
+        let db = await dbConnection();
+
+        let [qres, fields] = await db.execute("SELECT * FROM `users` WHERE sessionId = ? AND email = ?;",
+            [sessionId,  email]);
+
+        if(qres.length > 0) {
+
+            req.session_id = sessionId;
+
+            console.log("found user!");
+            
+            let user =  {
+                email: qres[0].email,
+                verified: qres[0].verified,
+                sessionId: qres[0].sessionId,
+                firstName: qres[0].firstName,
+                lastName: qres[0].lastName,
+                role: qres[0].role
             }
 
-            console.log(qres);
-            if(qres.length > 0) {
+            await db.end();
 
-                req.session_id = sessionId;
-
-                console.log("found user!");
-                return res.json({
-                    ...data,
-                    user: {
-                        email: qres[0].email,
-                        verified: qres[0].verified,
-                        sessionId: qres[0].sessionId,
-                        firstName: qres[0].firstName,
-                        lastName: qres[0].lastName,
-                        role: qres[0].role
-                    }
-                });
-            }
-            else
-            {
-                console.log("didn't find user!");
-                return res.json({
-                    ...data,
-                    user: null
-                });
-            }
-        });
+            return res.json({
+                countryIdx: countryIdx,
+                user: user
+            });
+        }
     }
-    else
-    {
-        //req.drop();
-        return res.json({
-            ...data,
-            user: null
-        });
-    }
+            
+    await db.end();
+    
+    console.log("didn't find user!");
+
+    return res.status(401).end();
 });
 
 app.post('/signin/action', (req, res) => {
@@ -137,7 +128,7 @@ app.post('/signin/action', (req, res) => {
     const sessionToken = uuid()
 });
 
-app.post('/register/action', (req, res) => {
+app.post('/register/action', async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
 
     let errors = {};
@@ -165,60 +156,61 @@ app.post('/register/action', (req, res) => {
 
     const sessionId = uuid();
     
-    db.query("INSERT INTO `users` (firstName, lastName, email, password, sessionId) VALUES(?, ?, ?, ?, ?);",
-        [firstName, lastName, email, password, sessionId], (err, qres) => {
-        if(err) {
-            console.log(err);
-            return res.status(401).end()
-        }
+    let db = await dbConnection();
 
-        req.session_id = sessionId;
-        
-        const data = {
-            firstName: firstName,
-            lastName: lastName,
-            email: email,
-            verified: 0,
-            sessionId: req.session_id,
-            role: common.kDefaultRole,
-        };
+    let [qres, fields] = await db.execute("INSERT INTO `users` (firstName, lastName, email, password, sessionId) VALUES(?, ?, ?, ?, ?);",
+        [firstName, lastName, email, password, sessionId]);
 
-        _sessions[sessionId] = data;
+    req.session_id = sessionId;
+    
+    let user = {
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        verified: 0,
+        sessionId: req.session_id,
+        role: common.kDefaultRole,
+    };
 
-        return res.json({
-            user: data
-        });
+    _sessions[sessionId] = user;
+
+    await db.end();
+
+    return res.json({
+        user: user
     });
 });
 
 app.post('/verify_email/action', async (req, res) => {
     const { sessionId } = req.body;
-    //req.session_id = sessionId;
-    await GetUser(sessionId, req, async (user) => 
-    {
-        console.log('/verify_email/action/:sessionId'   );
-        if(!user) {
-            console.log("!user");
-            return res.status(401).end();
-        }
     
-        user.verified = 1;
-    
-            await db.query("UPDATE `users` SET verified = ? WHERE sessionId = ?;",
-                [user.verified, sessionId], (err, qres) => {
-                if(err) 
-                {
-                    console.log(err);
-                    return res.status(401).end();
-                }
+    let user = await GetUser(sessionId, req);
 
-                console.log("verified!");
-                /*return res.json({
-                    user: user
-                });*/
-            });
+    console.log(user);
+    console.log('/verify_email/action/:sessionId'   );
+
+    if(!user) {
+        console.log("!user");
+        return res.status(401).end();
+    }
+
+    user.verified = 1;
+
+    let db = await dbConnection();
+
+    let [qres, fields] = await db.execute("UPDATE `users` SET verified = ? WHERE sessionId = ?;",
+        [user.verified, sessionId]);
+    
+        
+    await db.end();
+
+    console.log("verified");
+
+    return res.json({
+        user: user
     });
 });
+
 
 // #todo add parameter with id
 /*app.post('/verify_email/action', (req, res) => {
