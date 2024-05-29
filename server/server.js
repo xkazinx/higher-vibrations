@@ -158,7 +158,17 @@ app.post('/register/action', async (req, res) => {
     
     let db = await dbConnection();
 
-    let [qres, fields] = await db.execute("INSERT INTO `users` (firstName, lastName, email, password, sessionId) VALUES(?, ?, ?, ?, ?);",
+    let [qres, fields] = await db.execute("SELECT id FROM `users` WHERE email = ?;",
+        [email]);
+
+    if(qres.length > 0)
+    {
+        errors.email = 2;
+        db.end();
+        return res.json({ errors: { ...errors } });
+    }
+
+    await db.execute("INSERT INTO `users` (firstName, lastName, email, password, sessionId) VALUES(?, ?, ?, ?, ?);",
         [firstName, lastName, email, password, sessionId]);
 
     req.session_id = sessionId;

@@ -12,8 +12,6 @@ import axios from 'axios';
 import { common } from '../common/common.mjs'
 import { useRef, useState, useEffect } from 'react'
 
-// TODO remove, this demo shouldn't need to reset the theme.
-
 function VerifyEmailAction({ userData, setUserData }) {
   const { sessionId } = useParams();
   const router = useNavigate();
@@ -34,7 +32,6 @@ function VerifyEmailAction({ userData, setUserData }) {
       .then(res => 
         {
           setUserData(res.data.user);
-          console.log("verified");
           router("/");
         })
       .catch(err => console.log(err));

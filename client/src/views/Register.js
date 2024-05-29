@@ -57,10 +57,54 @@ function Register({ setUserData }) {
         router('/signin');
     };
 
-    /*useEffect(() => 
+  const getErrorText = (id, err) =>
     {
-        console.log(formErrorData);
-    }, formErrorData);*/
+        switch(id)
+        {
+          case 'repeatPassword':
+            switch(err)
+            {
+              case 1:
+                return "*Las contraseñas no coinciden";
+            }
+            break;
+
+          case 'email':
+            switch(err)
+            {
+              case 1:
+                return "*Ingresa un email válido";
+
+              case 2:
+                return "*Ya existe una cuenta registrada con este email";
+            }
+            break;
+
+          case 'password':
+            switch(err)
+            {
+            case 1:
+              return "*La contraseña debe contener al menos 8 caracteres";
+            }
+            break;
+
+          case 'firstName':
+            switch(err)
+            {
+            case 1:
+              return "*El nombre debe contener al menos 1 caracter";
+            }
+            break;
+
+          case 'lastName':
+            switch(err)
+            {
+            case 1:
+              return "*El apellido debe contener al menos 1 caracter";
+            }
+            break;
+        }
+    };
 
     const onRegister = async (event) =>
     {
@@ -86,6 +130,17 @@ function Register({ setUserData }) {
             lastName: form_data.get('lastName'),
         };
 
+        if (data.password != form_data.get('repeatPassword'))
+        {
+          setErrorData({ repeatPassword: 1 });
+          return;
+        }
+        else if(data.password == 'asd')
+        {
+          setErrorData({ repeatPassword: 2 });
+          return;
+        }
+
         setIsCreatingAccount(true);
        
         await axios.post(common.kDomain + 'register/action', data)
@@ -93,7 +148,6 @@ function Register({ setUserData }) {
             {
             setIsCreatingAccount(false);
             
-            console.log(res.data);
             if(typeof res.data.errors !== 'undefined')
             {
                 setErrorData(res.data.errors);
@@ -101,13 +155,12 @@ function Register({ setUserData }) {
             }
 
             setUserData(res.data.user);
-            console.log("register/action:")
-            console.log(res.data.user);
 
             Cookies.set('sessionId', res.data.user.sessionId,
-               { expires: 2147483647 });
+               { expires: common.kMaxExpireTime });
+
             Cookies.set('email', res.data.user.email,
-               { expires: 2147483647 });
+               { expires: common.kMaxExpireTime });
 
             router('/verify_email');
             })
@@ -155,7 +208,7 @@ function Register({ setUserData }) {
               />
               <Error 
                 disabled={typeof errorData.firstName === 'undefined'}
-                text={'*Ingresa un nombre válido.'}>
+                text={getErrorText('firstName', errorData.firstName)}>
               </Error>
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -171,7 +224,7 @@ function Register({ setUserData }) {
               />
               <Error 
                 disabled={typeof errorData.lastName === 'undefined'}
-                text={'*Ingresa un apellido válido.'}>
+                text={getErrorText('lastName', errorData.lastName)}>
               </Error>
             </Grid>
             <Grid item xs={12}>
@@ -187,7 +240,7 @@ function Register({ setUserData }) {
               />
               <Error 
                 disabled={typeof errorData.email === 'undefined'}
-                text={'*Ingresa un email válido.'}>
+                text={getErrorText('email', errorData.email)}>
               </Error>
             </Grid>
             <Grid item xs={12}>
@@ -204,7 +257,24 @@ function Register({ setUserData }) {
               />
               <Error 
                 disabled={typeof errorData.password === 'undefined'}
-                text={'*Ingresa una contraseña de al menos 8 caracteres.'}>
+                text={getErrorText('password', errorData.password)}>
+              </Error>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                variant="outlined"
+                required
+                fullWidth
+                name="repeatPassword"
+                label="Repetir contraseña"
+                type="password"
+                id="repeatPassword"
+                autoComplete="repeat-password"
+                disabled={isCreatingAccount}
+              />
+              <Error 
+                disabled={typeof errorData.repeatPassword === 'undefined'}
+                text={getErrorText('repeatPassword', errorData.repeatPassword)}>
               </Error>
             </Grid>
             <Grid item xs={12}>

@@ -335,7 +335,7 @@ function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoa
                 (
                   <span>
                     <Tooltip title={ "Open settings" }>
-                      <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                      <IconButton onClick={handleOpenUserMenu}>
                         <Avatar>
                         <AccountCircle sx={{ color: '#a83279', width: '100%', height: '100%' }} />
                         </Avatar>

@@ -3,3 +3,5 @@ Add favicon
 Boton "Sign in with google" en español
     https://blog.logrocket.com/guide-adding-google-login-react-app/
     https://console.cloud.google.com/apis/credentials?project=tuticket-1716266914134
+    
+https://joi.dev/api/?v=17.13.0#general-usage
