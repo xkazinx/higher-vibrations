@@ -40,7 +40,7 @@ function App() {
       return;
     
     initialized.current = true
-    
+    axios.defaults.withCredentials = true;
     fetchData();
   }, []);
 
@@ -66,7 +66,7 @@ function App() {
   const fetchData = async () => {
    // console.log("fetchData");
     let countryIdx = -1;
-    let email = -1;
+    let userId = -1;
     let sessionId = -1;
 
     const localCountryIdx = Cookies.get("countryIdx");
@@ -76,27 +76,22 @@ function App() {
       countryIdx = localCountryIdx;
     }
 
-    const localEmail = Cookies.get("email");
+    const localUserId = Cookies.get("userId");
     const localSessionId = Cookies.get("sessionId");
 
-    if(localEmail) {  
-      console.log("Found localEmail");
-      email = localEmail;
+    if(localUserId) {  
+      userId = localUserId;
     }
 
     if(localSessionId) {
       sessionId = localSessionId;
-    }
-    else
-    {
-      console.log("localSessionId not found");
     }
 
     let data =
     {
         countryIdx: countryIdx,
         sessionId: sessionId,
-        email: email,
+        userId: userId,
     };
     
     await axios.post(common.kDomain + 'entry/', data)
@@ -113,7 +108,7 @@ function App() {
           {
             // localStorage.removeItem('user');
             Cookies.remove('sessionId');
-            Cookies.remove('email');
+            Cookies.remove('userId');
           }
         })
       .catch(err => console.log(err));
@@ -146,7 +141,7 @@ function App() {
         <MenuAppBar userData={userData} setUserData={setUserData} userLoaded={userLoaded} onCountryLoaded={onCountryLoaded} countryLoaded={countryLoaded} countryIdx={countryIdx} />
         <Routes>
             <Route path='/' element={<Home eventsData={eventsData} eventsLoaded={eventsLoaded}/> } />
-            <Route path='/signin' element={<SignIn/> } />
+            <Route path='/signin' element={<SignIn setUserData={setUserData} setUserLoaded={setUserLoaded} /> } />
             <Route path='/register' element={<Register setUserData={setUserData} /> } />
             <Route path='/verify_email' element={<VerifyEmail userData={userData} /> } />
             <Route path='/verify_email/action/:sessionId' element={<VerifyEmailAction userData={userData} setUserData={setUserData} /> } />

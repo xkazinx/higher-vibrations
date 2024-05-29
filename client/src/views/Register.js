@@ -159,7 +159,7 @@ function Register({ setUserData }) {
             Cookies.set('sessionId', res.data.user.sessionId,
                { expires: common.kMaxExpireTime });
 
-            Cookies.set('email', res.data.user.email,
+            Cookies.set('userId', res.data.user.id,
                { expires: common.kMaxExpireTime });
 
             router('/verify_email');

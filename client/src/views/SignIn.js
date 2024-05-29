@@ -25,7 +25,7 @@ import Copyright from '../components/Copyright';
 
 const defaultTheme = createTheme();
   
-function SignIn() {
+function SignIn({ setUserData, setUserLoaded }) {
   const router = useNavigate();
 
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -57,8 +57,9 @@ function SignIn() {
         {
           console.log("Login success");
           setIsLoggingIn(false);
-          //setUserData(res.data.user);
-          //setUserLoaded(true);
+          setUserData(res.data.user);
+          setUserLoaded(true);
+          router("/");
           //onCountryLoaded(res.data.country_idx);
         })
       .catch(err => 

@@ -147,7 +147,8 @@ function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoa
     {
       const data = {
         sessionId: userData.sessionId,
-        email: userData.email
+        email: userData.email,
+        withCredentials: true,
       };
 
       await axios.post(common.kDomain + url, data)
