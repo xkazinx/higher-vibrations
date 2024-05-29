@@ -43,25 +43,6 @@ function App() {
     axios.defaults.withCredentials = true;
     fetchData();
   }, []);
-
-  /*useEffect(() => {
-    console.log(countryLoaded)
-  }, [countryLoaded]);*/
-
-  // OnLogin
-  // localStorage.setItem('user', response.data)
-
-  // OnGetData
-  /*const loggedInUser = localStorage.getItem("user");
-    if (loggedInUser) {
-      const foundUser = JSON.parse(loggedInUser);
-      setUser(foundUser);
-    }*/
-
-  // OnLogOut
-  // localStorage.removeItem("user")
-  // or, for all data
-  // localStorage.clear();
   
   const fetchData = async () => {
    // console.log("fetchData");
@@ -70,7 +51,7 @@ function App() {
     let sessionId = -1;
 
     const localCountryIdx = Cookies.get("countryIdx");
-    //const localCountryIdx = localStorage.getItem("countryIdx");
+    
     if(localCountryIdx)
     {
       countryIdx = localCountryIdx;
@@ -106,7 +87,6 @@ function App() {
           // #todo test
           if(res.data.user == null)
           {
-            // localStorage.removeItem('user');
             Cookies.remove('sessionId');
             Cookies.remove('userId');
           }

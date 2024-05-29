@@ -45,6 +45,19 @@ async function dbConnection()
     return await mysql.createConnection(db_auth);
 }
 
+function GetUserFromResult(qres)
+{
+    return {
+        email: qres[0].email,
+        verified: qres[0].verified,
+        sessionId: qres[0].sessionId,
+        firstName: qres[0].firstName,
+        lastName: qres[0].lastName,
+        role: qres[0].role,
+        id: qres[0].id
+    };
+}
+
 let _sessions = [];
 
 async function GetUser(sessionId, req) 
@@ -65,17 +78,12 @@ async function GetUser(sessionId, req)
         let [user_qres, fields] = await db.execute("SELECT * FROM `users` WHERE id = ?;"
             , [qres[0].id]
         );
-        data = {
-            email: user_qres[0].email,
-            verified: user_qres[0].verified,
-            sessionId: sessionId,
-            firstName: user_qres[0].firstName,
-            lastName: user_qres[0].lastName,
-            role: user_qres[0].role,
-            id: user_qres[0].id
-        };
+
+        data = GetUserFromResult(user_qres);
+        data.sessionId = sessionId;
 
         _sessions[sessionId] = data;
+
         req.session.session_id = sessionId;
         req.session.user_id = user_qres[0].id;
     }
@@ -123,15 +131,7 @@ app.post('/entry', async (req, res) => {
 
                 console.log("found user!");
                 
-                let user =  {
-                    email: qres[0].email,
-                    verified: qres[0].verified,
-                    sessionId: qres[0].sessionId,
-                    firstName: qres[0].firstName,
-                    lastName: qres[0].lastName,
-                    role: qres[0].role,
-                    id: qres[0].id
-                }
+                let user = GetUserFromResult(qres);
 
                 await db.end();
 
@@ -208,15 +208,7 @@ app.post('/signin/action', async (req, res) => {
     console.log("/signin/action " + req.session.session_id);
     console.log("/signin/action " + req.session.user_id);
 
-    const user = {
-        email: qres[0].email,
-        verified: qres[0].verified,
-        sessionId: qres[0].sessionId,
-        firstName: qres[0].firstName,
-        lastName: qres[0].lastName,
-        role: qres[0].role,
-        id: qres[0].id
-    };
+    const user = GetUserFromResult(qres);
 
     _sessions[sessionId] = user;
 
@@ -234,7 +226,7 @@ app.post('/register/action', async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
 
     let errors = {};
-
+    
     // #todo validate entries
     if(firstName.length == 0) {
         errors.firstName = 1;
@@ -272,13 +264,16 @@ app.post('/register/action', async (req, res) => {
 
     const sessionId = uuid();
 
-    let [qres, fields] = await db.execute("INSERT INTO `users` (firstName, lastName, email, password, sessionId) VALUES(?, ?, ?, ?, ?);",
-        [firstName, lastName, email, password, sessionId]);
+    let [qres, fields] = await db.execute("INSERT INTO `users` (firstName, lastName, email, password, sessionId) VALUES(?, ?, ?, ?);",
+        [firstName, lastName, email, password]);
 
     req.session.session_id = sessionId;
     req.session.user_id = qres.insertId;
 
-    console.log("res.insertId " + qres.insertId);
+    await db.execute("INSERT INTO `sessions` (id, sessionId) VALUES (?, ?);",
+        [req.session.user_id, req.session.session_id]);
+
+    await db.end();
 
     let user = {
         firstName: firstName,
@@ -305,18 +300,26 @@ app.post('/verify_email/action', async (req, res) => {
     let user = await GetUser(sessionId, req);
 
     if(!user) {
-        console.log("/verify_email/action: user is null");
-        return res.status(401).end();
+        let db = await dbConnection();
+
+        let [qres, fields] = await db.execute("SELECT * from `users` WHERE sessionId = ?;",
+            [sessionId]);
+        
+        if(qres.length == 0) {
+            return res.status(401).end();
+        }
+
+        user = GetUserFromResult(qres);
+
+        console.log("/verify_email/action: user is null, selected from db");
     }
+
+    user.verified = 1;
 
     let db = await dbConnection();
 
     let [qres, fields] = await db.execute("UPDATE `users` SET verified = ? WHERE sessionId = ?;",
         [user.verified, sessionId]);
-    
-    if(qres.affectedRows > 0) {
-        user.verified = 1;
-    }
 
     await db.end();
 

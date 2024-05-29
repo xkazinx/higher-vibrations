@@ -12,7 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import Logo from '../assets/logo.png';
 import FlagAR  from '../assets/flag-ar.png';
-import FlagCL  from '../assets/flag-cl.png';
+import FlagCL  from '../assets/flag-cl-2.png';
 import { Link } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled, alpha } from '@mui/material/styles';
