@@ -158,7 +158,7 @@ app.post('/signin/action', async (req, res) => {
 
     if(req.session.session_id && req.session.user_id)
     {
-        let user = await GetUser(req.session.session_id);
+        let user = await GetUser(req.session.session_id, req);
         if(user) {
             return res.json({
                 user: user
@@ -232,7 +232,7 @@ app.post('/register/action', async (req, res) => {
 
     if(req.session.session_id && req.session.user_id)
     {
-        let user = await GetUser(req.session.session_id);
+        let user = await GetUser(req.session.session_id, req);
         if(user) {
             return res.status(401).end();
         }
@@ -346,7 +346,7 @@ app.post('/verify_email/action', async (req, res) => {
 app.post('/dashboard/profile', async (req, res) => {
     if(req.session.session_id && req.session.user_id)
     {
-        let user = await GetUser(req.session.session_id);
+        let user = await GetUser(req.session.session_id, req);
         if(user) {
             return res.status(401).end();
         }
