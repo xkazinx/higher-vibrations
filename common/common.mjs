@@ -10,7 +10,7 @@ class data
         this.kAdminRole = 2;
         this.kDefaultRole = this.kUserRole;
         this.kMaxExpireTime = 2147483647;
-        
+        this.kUserVerified = 1;   
     }
 
     GetValue(value) 

@@ -8,6 +8,15 @@ import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 
 const app = express(); // #todo move to .env config file and modify accordingly
+
+app.use(session({
+    // #todo move to .env config file and modify accordingly
+    secret: 'testing', // Replace with your own secret key
+    resave: true,
+    saveUninitialized: true,
+    httpOnly: true
+}));
+
 const whitelist = ['http://localhost:3000'];
 const corsOptions = {
   credentials: true, // This is important.
@@ -22,13 +31,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json())
 app.use(cookieParser())
-app.use(session({
-    // #todo move to .env config file and modify accordingly
-    secret: 'testing', // Replace with your own secret key
-    resave: true,
-    saveUninitialized: true,
-    httpOnly: true
-}));
 
 // #todo move to .env config file and modify accordingly
 const db_auth = 
@@ -49,12 +51,12 @@ function GetUserFromResult(qres)
 {
     return {
         email: qres[0].email,
-        verified: qres[0].verified,
         sessionId: qres[0].sessionId,
         firstName: qres[0].firstName,
         lastName: qres[0].lastName,
         role: qres[0].role,
-        id: qres[0].id
+        id: qres[0].id,
+        verified: qres[0].verified
     };
 }
 
@@ -67,7 +69,7 @@ async function GetUser(sessionId, req)
         return _sessions[sessionId];
     }
 
-    let data = null;
+    let user = null;
     let db = await dbConnection();
     let [qres, fields] = await db.execute("SELECT id FROM `sessions` WHERE sessionId = ?;"
         , [sessionId]
@@ -79,17 +81,17 @@ async function GetUser(sessionId, req)
             , [qres[0].id]
         );
 
-        data = GetUserFromResult(user_qres);
-        data.sessionId = sessionId;
+        user = GetUserFromResult(user_qres);
+        user.sessionId = sessionId;
 
-        _sessions[sessionId] = data;
+        _sessions[sessionId] = user;
 
         req.session.session_id = sessionId;
         req.session.user_id = user_qres[0].id;
     }
 
     await db.end();
-    return data;
+    return user;
 }
 
 app.post('/entry', async (req, res) => {
@@ -103,33 +105,32 @@ app.post('/entry', async (req, res) => {
 
     if(!guest)
     {
-        console.log("user is not guest, selecting from db...");
+        console.log("/entry: user is not guest, selecting from db...");
     
         let db = await dbConnection();
 
-        let foundSession = false;
+        let userId = -1;
         {
             let [qres, fields] = await db.execute("SELECT id FROM `sessions` WHERE sessionId = ?;",
                 [sessionId]);
 
+            // #todo can there be duplicate sessionIds?
             for(let i = 0; i < qres.length; ++i) {
-                if(qres[i].id == userId) {
-                    foundSession = true;
-                    break;
-                }
+                userId = qres[0].id;
+                break;
             }
         }
 
-        if(foundSession) {
-            let [qres, fields] = await db.execute("SELECT * FROM `users` WHERE sessionId = ? AND email = ?;",
-                [sessionId,  email]);
+        if(userId != -1) {
+            let [qres, fields] = await db.execute("SELECT * FROM `users` WHERE id = ?;",
+                [userId]);
 
             if(qres.length > 0) {
 
                 req.session.session_id = sessionId;
                 req.session.user_id = qres[0].id;
 
-                console.log("found user!");
+                console.log("/entry: found user!");
                 
                 let user = GetUserFromResult(qres);
 
@@ -142,6 +143,10 @@ app.post('/entry', async (req, res) => {
             }
         }
     }
+    else
+    {
+        console.log("/entry: guest logged in")
+    }
     
     return res.json({
         countryIdx: countryIdx,
@@ -150,7 +155,7 @@ app.post('/entry', async (req, res) => {
 });
 
 app.post('/signin/action', async (req, res) => {
-    console.log(req);
+
     if(req.session.session_id && req.session.user_id)
     {
         let user = await GetUser(req.session.session_id);
@@ -225,6 +230,14 @@ app.post('/signin/action', async (req, res) => {
 app.post('/register/action', async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
 
+    if(req.session.session_id && req.session.user_id)
+    {
+        let user = await GetUser(req.session.session_id);
+        if(user) {
+            return res.status(401).end();
+        }
+    }
+
     let errors = {};
     
     // #todo validate entries
@@ -264,8 +277,8 @@ app.post('/register/action', async (req, res) => {
 
     const sessionId = uuid();
 
-    let [qres, fields] = await db.execute("INSERT INTO `users` (firstName, lastName, email, password, sessionId) VALUES(?, ?, ?, ?);",
-        [firstName, lastName, email, password]);
+    let [qres, fields] = await db.execute("INSERT INTO `users` (firstName, lastName, email, password, sessionId) VALUES(?, ?, ?, ?, ?);",
+        [firstName, lastName, email, password, sessionId]);
 
     req.session.session_id = sessionId;
     req.session.user_id = qres.insertId;
@@ -279,10 +292,10 @@ app.post('/register/action', async (req, res) => {
         firstName: firstName,
         lastName: lastName,
         email: email,
-        verified: 0,
         sessionId: req.session.session_id,
         role: common.kDefaultRole,
         id: req.session.user_id,
+        verified: 0
     };
 
     _sessions[sessionId] = user;
@@ -314,13 +327,13 @@ app.post('/verify_email/action', async (req, res) => {
         console.log("/verify_email/action: user is null, selected from db");
     }
 
-    user.verified = 1;
+    user.verified = common.kUserVerified;
 
     let db = await dbConnection();
 
     let [qres, fields] = await db.execute("UPDATE `users` SET verified = ? WHERE sessionId = ?;",
-        [user.verified, sessionId]);
-
+        [user.verified, user.sessionId]);
+        
     await db.end();
 
     console.log("/verify_email/action: verified " + user.email);
@@ -330,8 +343,16 @@ app.post('/verify_email/action', async (req, res) => {
     });
 });
 
-app.post('/dashboard/profile', (req, res) => {
-    return res.json([{ title: 'title', price: 500 }]);
+app.post('/dashboard/profile', async (req, res) => {
+    if(req.session.session_id && req.session.user_id)
+    {
+        let user = await GetUser(req.session.session_id);
+        if(user) {
+            return res.status(401).end();
+        }
+    }
+
+    return res.status(401).end();
 });
 
 app.post('/events', (req, res) => {
@@ -341,6 +362,7 @@ app.post('/events', (req, res) => {
 app.post('/logout', async (req, res) => {
     console.log("/logout: " + req.session.session_id);
     console.log("/logout: " + req.session.user_id);
+    
     if(!req.session.session_id || !req.session.user_id) {
         console.log("/logout: !req.session.session_id || req.session.user_id");
         return res.json({});

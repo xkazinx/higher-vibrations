@@ -18,6 +18,9 @@ function VerifyEmail({ userData }) {
   };
 
   const onClickVerifyEmail = () => {
+    if(!userData)
+      return;
+    
     router('/verify_email/action/' + userData.sessionId);
   };
 
