@@ -227,6 +227,31 @@ app.post('/signin/action', async (req, res) => {
     });
 });
 
+var emailRegex = /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
+
+function isEmailValid(email) {
+    if (!email)
+        return false;
+
+    if(email.length>254)
+        return false;
+
+    var valid = emailRegex.test(email);
+    if(!valid)
+        return false;
+
+    // Further checking of some things regex can't handle
+    var parts = email.split("@");
+    if(parts[0].length>64)
+        return false;
+
+    var domainParts = parts[1].split(".");
+    if(domainParts.some(function(part) { return part.length>63; }))
+        return false;
+
+    return true;
+}
+
 app.post('/register/action', async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
 
@@ -240,6 +265,9 @@ app.post('/register/action', async (req, res) => {
 
     let errors = {};
     
+    if(!firstName || !lastName || !email || !password)
+        return res.status(401).end();
+
     // #todo validate entries
     if(firstName.length == 0) {
         errors.firstName = 1;
@@ -249,7 +277,7 @@ app.post('/register/action', async (req, res) => {
         errors.lastName = 1;
     }
 
-    if(email.length < 5) {
+    if(!isEmailValid(email)) {
         errors.email = 1;
     }
 

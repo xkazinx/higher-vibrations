@@ -4,9 +4,9 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect } from 'react'
+import Sidebar from '../components/Sidebar.tsx';
 
 // TODO remove, this demo shouldn't need to reset the theme.
-
 function Profile({ userData }) {
   const router = useNavigate();
 

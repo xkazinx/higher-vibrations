@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
 import Container from '@mui/material/Container';
 import Avatar from '@mui/material/Avatar';
+import MenuIcon from '@mui/icons-material/Menu';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
@@ -25,9 +26,21 @@ import { makeStyles } from "@material-ui/core/styles";
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { common } from '../common/common.mjs'
-
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Divider from '@mui/material/Divider';
+import InboxIcon from '@mui/icons-material/MoveToInbox';
+import MailIcon from '@mui/icons-material/Mail';
+import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 //const pages = ['Products', 'Pricing', 'Blog'];
 const pages = [];
+
+const drawerWidth = 240;
 
 const settings = [
   { text: 'Perfil', url: 'dashboard/profile', role: common.kUserRole }, 
@@ -45,6 +58,15 @@ const countries = [
     image: FlagAR,
   }
 ];
+
+const DrawerHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: theme.spacing(0, 1),
+  // necessary for content to be below app bar
+  ...theme.mixins.toolbar,
+  justifyContent: 'flex-end',
+}));
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -113,7 +135,7 @@ function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoa
     
     setAppData(app_data);
   }, [app_data]);*/
-  
+
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const [anchorElCountries, setAnchorElCountries] = React.useState<null | HTMLElement>(null);
@@ -181,11 +203,36 @@ function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoa
   const handleClickLogin = () => {
     router('/signin');
   };
+  
+  const [sideBarOpened, setSideBarOpened] = React.useState(false);
+
+  const handleDrawerOpen = () => {
+    setSideBarOpened(true);
+  };
+
+  const handleDrawerClose = () => {
+    setSideBarOpened(false);
+  };
 
   return (
-    <AppBar position="static" sx={{ background: 'linear-gradient(-90deg, #d38312, #a83279)'}}>
+    <AppBar position="static" open={sideBarOpened} sx={{ 
+      background: 'linear-gradient(-90deg, #d38312, #a83279)',
+       width: sideBarOpened ? `calc(100% - ${drawerWidth}px)` : `100%`, 
+       left: sideBarOpened ? `${drawerWidth}px` : `0px`,
+       position: sideBarOpened ? 'absolute' : 'static',
+       top: '0px' }}>
       <Container maxWidth="xl">
         <Toolbar sx={{  paddingLeft: '5vw', paddingRight: '5vw' }} disableGutters>
+          <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={handleDrawerOpen}
+              edge="start"
+              sx={{ mr: 2, ...(sideBarOpened && { display: 'none' }) }}
+            >
+              <MenuIcon />
+          </IconButton>
+
           <Link to="/">
             <Box
               component="img"
@@ -378,6 +425,51 @@ function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoa
             }
           </Box>
         </Toolbar>
+        <Drawer
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+          },
+        }}
+        variant="persistent"
+        anchor="left"
+        open={sideBarOpened}
+      >
+        <DrawerHeader>
+          <IconButton onClick={handleDrawerClose}>
+            {<ChevronLeftIcon />}
+          </IconButton>
+        </DrawerHeader>
+        <Divider />
+        <List>
+          {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
+            <ListItem key={text} disablePadding>
+              <ListItemButton>
+                <ListItemIcon>
+                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                </ListItemIcon>
+                <ListItemText primary={text} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+        <Divider />
+        <List>
+          {['All mail', 'Trash', 'Spam'].map((text, index) => (
+            <ListItem key={text} disablePadding>
+              <ListItemButton>
+                <ListItemIcon>
+                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                </ListItemIcon>
+                <ListItemText primary={text} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </Drawer>
       </Container>
     </AppBar>
   );
