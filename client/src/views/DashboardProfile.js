@@ -7,7 +7,7 @@ import { useRef, useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar.tsx';
 
 // TODO remove, this demo shouldn't need to reset the theme.
-function Profile({ userData }) {
+function Profile({ userData, sideBarOpened }) {
   const router = useNavigate();
 
   const initialized = useRef(false)
@@ -18,18 +18,18 @@ function Profile({ userData }) {
     
     initialized.current = true
     
-    if(userData.verified == 0)
+    if(userData && userData.verified == 0)
       {
         router("/verify_email");
       }
-  }, []);
+  }, [userData]);
 
   return (
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box
           sx={{
-            marginTop: 8,
+            marginTop: (sideBarOpened ? document.getElementById("appbar").offsetHeight : 0) + 'px !important',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',

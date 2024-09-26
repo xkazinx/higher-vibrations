@@ -4,9 +4,7 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import { useNavigate } from "react-router-dom";
 
-// TODO remove, this demo shouldn't need to reset the theme.
-
-function Dashboard({ userData }) {
+function Dashboard({ userData, sideBarOpened }) {
   const router = useNavigate();
 
   const handleOnClickRegister = () => {
@@ -18,7 +16,7 @@ function Dashboard({ userData }) {
         <CssBaseline />
         <Box
           sx={{
-            marginTop: 8,
+            marginTop: (sideBarOpened ? document.getElementById("appbar").offsetHeight : 0) + 'px !important',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',

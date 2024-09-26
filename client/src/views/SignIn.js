@@ -20,6 +20,7 @@ import { common } from '../common/common.mjs'
 import { CircularProgress } from '@mui/material';
 import { useNavigate } from "react-router-dom";
 import Copyright from '../components/Copyright';
+import Error from '../components/Error'
 
 // TODO remove, this demo shouldn't need to reset the theme.
 
@@ -28,7 +29,31 @@ const defaultTheme = createTheme();
 function SignIn({ setUserData, setUserLoaded }) {
   const router = useNavigate();
 
+  
+  const getErrorText = (id, err) =>
+    {
+        switch(id)
+        {
+          case 'email':
+            switch(err)
+            {
+              case 1:
+                return "*El email no es válido";
+            }
+            break;
+
+          case 'password':
+            switch(err)
+            {
+              case 1:
+                return "*La contraseña es incorrecta";
+            }
+            break;
+        }
+    };
+
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [errorData, setErrorData] = useState({});
 
   // #test if going to this route sets isLoggingIn to false with useEffect
   const initialized = useRef(false)
@@ -52,11 +77,21 @@ function SignIn({ setUserData, setUserLoaded }) {
       password: form_data.get('password'),
     };
 
+    setErrorData(({}));
+
     await axios.post(common.kDomain + 'signin/action', data)
       .then(res => 
         {
           console.log("Login success");
           setIsLoggingIn(false);
+
+          
+          if(typeof res.data.errors !== 'undefined')
+          {
+            setErrorData(res.data.errors);
+            return;
+          }
+
           setUserData(res.data.user);
           setUserLoaded(true);
           router("/");
@@ -110,6 +145,10 @@ function SignIn({ setUserData, setUserLoaded }) {
               autoComplete="email"
               autoFocus
             />
+            <Error 
+                disabled={typeof errorData.email === 'undefined'}
+                text={getErrorText('email', errorData.email)}>
+              </Error>
             <TextField
               disabled={isLoggingIn}
               margin="normal"
@@ -125,6 +164,10 @@ function SignIn({ setUserData, setUserLoaded }) {
               control={<Checkbox value="remember" color="primary" />}
               label="Recordar contraseña"
             />*/}
+            <Error 
+                disabled={typeof errorData.password === 'undefined'}
+                text={getErrorText('password', errorData.password)}>
+              </Error>
             <Grid container>
               <Grid item xs>
                 <Link href="#" variant="body2">

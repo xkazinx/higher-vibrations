@@ -126,7 +126,7 @@ export function SearchBar() {
   );
 }
 
-function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoaded, countryIdx }) {
+function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoaded, countryIdx, sideBarOpened, setSideBarOpened }) {
   const router = useNavigate();
 
   /*useEffect(() => {
@@ -135,6 +135,10 @@ function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoa
     
     setAppData(app_data);
   }, [app_data]);*/
+
+  useEffect(() => {
+
+  }, [userData]);
 
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
@@ -204,8 +208,6 @@ function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoa
     router('/signin');
   };
   
-  const [sideBarOpened, setSideBarOpened] = React.useState(false);
-
   const handleDrawerOpen = () => {
     setSideBarOpened(true);
   };
@@ -215,7 +217,7 @@ function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoa
   };
 
   return (
-    <AppBar position="static" open={sideBarOpened} sx={{ 
+    <AppBar id="appbar" position="static" open={sideBarOpened} sx={{ 
       background: 'linear-gradient(-90deg, #d38312, #a83279)',
        width: sideBarOpened ? `calc(100% - ${drawerWidth}px)` : `100%`, 
        left: sideBarOpened ? `${drawerWidth}px` : `0px`,
@@ -445,7 +447,7 @@ function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoa
         </DrawerHeader>
         <Divider />
         <List>
-          {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
+          {['Dashboard', 'Item 2', 'Item 3'].map((text, index) => (
             <ListItem key={text} disablePadding>
               <ListItemButton>
                 <ListItemIcon>
@@ -458,7 +460,7 @@ function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoa
         </List>
         <Divider />
         <List>
-          {['All mail', 'Trash', 'Spam'].map((text, index) => (
+          {['Profile', 'Item 2', 'Item 3'].map((text, index) => (
             <ListItem key={text} disablePadding>
               <ListItemButton>
                 <ListItemIcon>

@@ -35,6 +35,8 @@ function App() {
 
   const initialized = useRef(false)
 
+  const [sideBarOpened, setSideBarOpened] = useState(false);
+
   useEffect(() => {
     if(initialized.current)
       return;
@@ -118,17 +120,23 @@ function App() {
     <BrowserRouter>
       <div style={{ height: '100vh' }}>
         <CssBaseline/>
-        <MenuAppBar userData={userData} setUserData={setUserData} userLoaded={userLoaded} onCountryLoaded={onCountryLoaded} countryLoaded={countryLoaded} countryIdx={countryIdx} />
+        <MenuAppBar 
+          sideBarOpened={sideBarOpened} setSideBarOpened={setSideBarOpened} 
+          userData={userData} setUserData={setUserData} 
+          userLoaded={userLoaded} onCountryLoaded={onCountryLoaded} 
+          countryLoaded={countryLoaded} countryIdx={countryIdx} 
+          />
         <Routes>
             <Route path='/' element={<Home eventsData={eventsData} eventsLoaded={eventsLoaded}/> } />
             <Route path='/signin' element={<SignIn setUserData={setUserData} setUserLoaded={setUserLoaded} /> } />
             <Route path='/register' element={<Register setUserData={setUserData} /> } />
             <Route path='/verify_email' element={<VerifyEmail userData={userData} /> } />
             <Route path='/verify_email/action/:sessionId' element={<VerifyEmailAction userData={userData} setUserData={setUserData} /> } />
-            <Route path='/dashboard' element={<Dashboard userData={userData} /> } />
-            <Route path='/dashboard/profile' element={<Profile userData={userData} /> } />
+            <Route path='/dashboard' element={<Dashboard sideBarOpened={sideBarOpened} userData={userData} /> } />
+            <Route path='/dashboard/profile' element={<Profile sideBarOpened={sideBarOpened} userData={userData} /> } />
         </Routes>
       </div>
+      
     </BrowserRouter>
   );
 }
