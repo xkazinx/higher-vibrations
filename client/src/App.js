@@ -13,7 +13,7 @@ import {BrowserRouter, Routes, Route, Outlet} from 'react-router-dom';
 import CssBaseline from '@mui/material/CssBaseline';
 // <img src={logo} className="App-logo" alt="logo" />
 import axios from 'axios';
-import { common } from './common/common.mjs'
+import { common } from './common/common.mjs';
 import { useRef, useState, useEffect } from 'react'
 import MenuAppBar from './components/Navbar.tsx';
 import Cookies from 'js-cookie';
@@ -47,21 +47,21 @@ function App() {
   const [userData, setUserData] = useState(null);
   const [userLoaded, setUserLoaded] = useState(false);
 
-  const initialized = useRef(false)
+  const [initialized, setInitialized] = useState(false);
 
   const [sideBarOpened, setSideBarOpened] = useState(false);
 
   useEffect(() => {
-    if(initialized.current)
+    if(initialized)
       return;
     
-    initialized.current = true
+    setInitialized(true);
     axios.defaults.withCredentials = true;
     fetchData();
   }, []);
   
   const fetchData = async () => {
-   // console.log("fetchData");
+    console.log("fetchData");
     let countryIdx = -1;
     let userId = -1;
     let sessionId = -1;
@@ -76,11 +76,11 @@ function App() {
     const localUserId = Cookies.get("userId");
     const localSessionId = Cookies.get("sessionId");
 
-    if(localUserId) {  
+    if(localUserId !== undefined) {  
       userId = localUserId;
     }
 
-    if(localSessionId) {
+    if(localSessionId !== undefined) {
       sessionId = localSessionId;
     }
 
@@ -116,6 +116,8 @@ function App() {
     setCountryLoaded(true);
     setEventsLoaded(false);
 
+    Cookies.set('countryIdx', countryIdx);
+
     let data =
     {
       countryIdx: countryIdx,
@@ -130,6 +132,11 @@ function App() {
       .catch(err => console.log(err));
   };
 
+  const setUserCookies = async (user) => {
+    Cookies.set('userId', user.id);
+    Cookies.set('sessionId', user.sessionId);
+  }
+
   return (
     <BrowserRouter>
       <div style={{ height: '100vh' }}>
@@ -142,7 +149,7 @@ function App() {
           />
         <Routes>
             <Route path='/' element={<Home eventsData={eventsData} eventsLoaded={eventsLoaded}/> } />
-            <Route path='/signin' element={<SignIn setUserData={setUserData} setUserLoaded={setUserLoaded} /> } />
+            <Route path='/signin' element={<SignIn setUserData={setUserData} setUserLoaded={setUserLoaded} setUserCookies={setUserCookies} /> } />
             <Route path='/register' element={<Register setUserData={setUserData} /> } />
             <Route path='/verify_email' element={<VerifyEmail userData={userData} /> } />
             <Route path='/verify_email/action/:sessionId' element={<VerifyEmailAction userData={userData} setUserData={setUserData} /> } />

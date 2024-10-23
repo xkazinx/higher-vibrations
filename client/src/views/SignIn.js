@@ -26,7 +26,7 @@ import Error from '../components/Error'
 
 const defaultTheme = createTheme();
   
-function SignIn({ setUserData, setUserLoaded }) {
+function SignIn({ setUserData, setUserLoaded, setUserCookies }) {
   const router = useNavigate();
 
   
@@ -94,6 +94,9 @@ function SignIn({ setUserData, setUserLoaded }) {
 
           setUserData(res.data.user);
           setUserLoaded(true);
+          setUserCookies(res.data.user);
+
+          console.log(res.data.user);
           router("/");
           //onCountryLoaded(res.data.country_idx);
         })
