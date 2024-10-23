@@ -1,3 +1,6 @@
+Remove sidebar for non-dashboard pages (check by route)
+
+
 Accessing dashboard/profile directly from url closses the session?
 Fix base profile and base dashboard
   Add user roles

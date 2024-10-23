@@ -1,5 +1,6 @@
 import express from 'express';
-import mysql from 'mysql2/promise';
+import mysqlPromise from 'mysql2/promise';
+import mysql from 'mysql';
 import session from 'express-session'   ;
 import cors from 'cors';
 import { common } from '../common/common.mjs';
@@ -7,17 +8,19 @@ import { v4 as uuid } from 'uuid';
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 
-const app = express(); // #todo move to .env config file and modify accordingly
+// Express library
+const app = express();
 
+// Session library
 app.use(session({
-    // #todo move to .env config file and modify accordingly
-    secret: 'testing', // Replace with your own secret key
+    secret: common.kSessionSecret,
     resave: true,
     saveUninitialized: true,
     httpOnly: true
 }));
 
-const whitelist = ['http://localhost:3000'];
+// Allowing request from given domains
+const whitelist = common.kClientDomains;
 const corsOptions = {
   credentials: true, // This is important.
   origin: (origin, callback) => {
@@ -28,23 +31,18 @@ const corsOptions = {
   }
 }
 
+// App configurations
 app.use(cors(corsOptions));
 app.use(bodyParser.json())
 app.use(cookieParser())
 
-// #todo move to .env config file and modify accordingly
-const db_auth = 
-{
-    host: 'localhost',
-    user: 'root',
-    password: 'root',
-    database: 'tuticket_new',
-    port: 3305
-};
+// For async mysql queries
+var pool = mysql.createPool(common.kDatabaseAuth);
 
+//For sync mysql queries
 async function dbConnection()
 {
-    return await mysql.createConnection(db_auth);
+    return await mysqlPromise.createConnection(common.kDatabaseAuth);
 }
 
 function GetUserFromResult(qres)
@@ -60,8 +58,13 @@ function GetUserFromResult(qres)
     };
 }
 
+// List of sessions loaded in memory
+// #TODO: Clear sessions every a given time
+// Sessions are also stored in the database in case the server resets
 let _sessions = [];
 
+// This function uses sync mysql queries because it needs to modify the 'req' variable,
+// same with any function that modifies the 'req' variable.
 async function GetUser(sessionId, req) 
 {
     const idx = _sessions.indexOf(sessionId);
@@ -94,6 +97,7 @@ async function GetUser(sessionId, req)
     return user;
 }
 
+// This is the first thing route that is requested by the client
 app.post('/entry', async (req, res) => {
     let { countryIdx, sessionId, userId } = req.body;
 
@@ -197,6 +201,7 @@ app.post('/signin/action', async (req, res) => {
         return res.json({ errors: { ...errors } });   
     }
 
+    
     // #todo encrypt
     const expectedPassword = qres[0].password;
     if (!expectedPassword || expectedPassword !== password) {
@@ -330,6 +335,8 @@ app.post('/register/action', async (req, res) => {
 
     await db.end();
 
+    // #todo send email with verify account link
+
     return res.json({
         user: user
     });
@@ -357,30 +364,37 @@ app.post('/verify_email/action', async (req, res) => {
 
     user.verified = common.kUserVerified;
 
-    let db = await dbConnection();
+    {
+        const _ = async function()
+            {
+                let db = await dbConnection();
 
-    let [qres, fields] = await db.execute("UPDATE `users` SET verified = ? WHERE sessionId = ?;",
-        [user.verified, user.sessionId]);
-        
-    await db.end();
+                let [qres, fields] = await db.execute("UPDATE `users` SET verified = ? WHERE sessionId = ?;",
+                    [user.verified, user.sessionId]);
+                    
+                await db.end();
 
-    console.log("/verify_email/action: verified " + user.email);
+                console.log("/verify_email/action: verified " + user.email);
 
-    return res.json({
-        user: user
-    });
+                return res.json({
+                    user: user
+                });
+            }();
+    }
 });
 
 app.post('/dashboard/profile', async (req, res) => {
     if(req.session.session_id && req.session.user_id)
     {
         let user = await GetUser(req.session.session_id, req);
-        if(user) {
+        if(!user) {
             return res.status(401).end();
         }
     }
 
-    return res.status(401).end();
+    return res.json({
+        
+    });
 });
 
 app.post('/events', (req, res) => {

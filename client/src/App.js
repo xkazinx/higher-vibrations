@@ -8,7 +8,7 @@ import VerifyEmailAction from './views/VerifyEmailAction';
 import Dashboard from './views/Dashboard';
 import Profile from './views/DashboardProfile';
 
-import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import {BrowserRouter, Routes, Route, Outlet} from 'react-router-dom';
 //import 'bootstrap/dist/css/bootstrap.min.css';
 import CssBaseline from '@mui/material/CssBaseline';
 // <img src={logo} className="App-logo" alt="logo" />
@@ -17,11 +17,25 @@ import { common } from './common/common.mjs'
 import { useRef, useState, useEffect } from 'react'
 import MenuAppBar from './components/Navbar.tsx';
 import Cookies from 'js-cookie';
+import { Box } from '@mui/material';
 
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
+
+function DashboardContainer({ sideBarOpened }) {
+  return (
+    <Box sx={{
+      marginTop: (sideBarOpened ? document.getElementById("appbar").offsetHeight : 0) + 'px !important',
+    }}>
+      {/* This element will render either <DashboardMessages> when the URL is
+          "/messages", <DashboardTasks> at "/tasks", or null if it is "/"
+      */}
+      <Outlet />
+    </Box>
+  );
+}
 
 function App() {
   const [eventsData, setEventsData] = useState([]);
@@ -132,8 +146,10 @@ function App() {
             <Route path='/register' element={<Register setUserData={setUserData} /> } />
             <Route path='/verify_email' element={<VerifyEmail userData={userData} /> } />
             <Route path='/verify_email/action/:sessionId' element={<VerifyEmailAction userData={userData} setUserData={setUserData} /> } />
-            <Route path='/dashboard' element={<Dashboard sideBarOpened={sideBarOpened} userData={userData} /> } />
-            <Route path='/dashboard/profile' element={<Profile sideBarOpened={sideBarOpened} userData={userData} /> } />
+            <Route path="/dashboard" element={<DashboardContainer sideBarOpened={sideBarOpened}/>}>
+              <Route path='/dashboard/main' element={<Dashboard sideBarOpened={sideBarOpened} userData={userData} /> } />
+              <Route path='/dashboard/profile' element={<Profile sideBarOpened={sideBarOpened} userData={userData} /> } />
+            </Route>
         </Routes>
       </div>
       

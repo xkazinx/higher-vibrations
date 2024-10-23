@@ -135,11 +135,6 @@ function Register({ setUserData }) {
           setErrorData({ repeatPassword: 1 });
           return;
         }
-        else if(data.password == 'asd')
-        {
-          setErrorData({ repeatPassword: 2 });
-          return;
-        }
 
         setIsCreatingAccount(true);
        

@@ -16,7 +16,6 @@ function Dashboard({ userData, sideBarOpened }) {
         <CssBaseline />
         <Box
           sx={{
-            marginTop: (sideBarOpened ? document.getElementById("appbar").offsetHeight : 0) + 'px !important',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
