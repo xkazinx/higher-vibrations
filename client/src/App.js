@@ -138,16 +138,21 @@ function App() {
     Cookies.set('sessionId', user.sessionId);
   }
 
-  function SideBar({ setSideBarAvailable, sideBarAvailable, userData, userLoaded, countryLoaded, countryIdx }) {
+  function SideBar({ setSideBarOpened, setSideBarAvailable, sideBarAvailable, userData, userLoaded, countryLoaded, countryIdx }) {
     const location = useLocation();
   
     useEffect(() => {
-      console.log(location);
-      console.log(location.pathname.includes("dashboard/"));
+      
       if(location.pathname.includes("dashboard/"))
       {
         setSideBarAvailable(true);
       }
+      else
+      {
+        setSideBarOpened(false);
+        setSideBarAvailable(false);
+      }
+
     }, [location]);
 
     return (<MenuAppBar 
@@ -163,7 +168,7 @@ function App() {
     <BrowserRouter>
       <div style={{ height: '100vh' }}>
         <CssBaseline/>
-        <SideBar setSideBarAvailable={setSideBarAvailable} sideBarAvailable={sideBarAvailable} userData={userData} userLoaded={userLoaded} countryLoaded={countryLoaded} countryIdx={countryIdx} />
+        <SideBar setSideBarOpened={setSideBarOpened} setSideBarAvailable={setSideBarAvailable} sideBarAvailable={sideBarAvailable} userData={userData} userLoaded={userLoaded} countryLoaded={countryLoaded} countryIdx={countryIdx} />
         <Routes>
             <Route path='/' element={<Home eventsData={eventsData} eventsLoaded={eventsLoaded}/> } />
             <Route path='/signin' element={<SignIn setUserData={setUserData} setUserLoaded={setUserLoaded} setUserCookies={setUserCookies} /> } />

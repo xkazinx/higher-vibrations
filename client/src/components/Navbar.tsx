@@ -36,7 +36,11 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
+import SvgIcon from '@mui/material/SvgIcon';
+
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
+
+
 //const pages = ['Products', 'Pricing', 'Blog'];
 const pages = [];
 
@@ -44,7 +48,7 @@ const drawerWidth = 240;
 
 const settings = [
   { text: 'Perfil', url: 'dashboard/profile', role: common.kUserRole }, 
-  { text: 'Dashboard', url: 'dashboard/', role: common.kOrganizerRole },
+  { text: 'Dashboard', url: 'dashboard/main', role: common.kOrganizerRole },
   { text: "Cerrar sesión", url: 'logout/', role: common.kUserRole }
 ];
 
@@ -133,6 +137,33 @@ function SideBar({ sideBarAvailable, drawerWidth, sideBarOpened, handleDrawerClo
     return <></>;
   }
   
+  const sideBarDashboard = 
+  [
+    {
+      name: 'Dashboard',
+      icon: InboxIcon,
+      url: '/dashboard/main',
+    }
+  ];
+
+  const sideBarProfile = 
+  [
+    {
+      name: 'Profile',
+      icon: InboxIcon,
+      url: '/dashboard/profile',
+    }
+  ];
+
+  const sideBarAdministration  = 
+  [
+    {
+      name: 'Administration',
+      icon:  MailIcon,
+      url: '/dashboard/admin',
+    }
+  ];
+
   return (
     <span>
     <Drawer
@@ -155,26 +186,39 @@ function SideBar({ sideBarAvailable, drawerWidth, sideBarOpened, handleDrawerClo
             </DrawerHeader>
             <Divider />
             <List>
-              {['Dashboard', 'Item 2', 'Item 3'].map((text, index) => (
-                <ListItem key={text} disablePadding>
+              {sideBarProfile.map((item, index) => (
+                <ListItem key={item.name} disablePadding>
                   <ListItemButton>
                     <ListItemIcon>
-                      {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                    <SvgIcon component={item.icon} inheritViewBox />
                     </ListItemIcon>
-                    <ListItemText primary={text} />
+                    <ListItemText primary={item.name} />
                   </ListItemButton>
                 </ListItem>
               ))}
             </List>
             <Divider />
             <List>
-              {['Profile', 'Item 2', 'Item 3'].map((text, index) => (
-                <ListItem key={text} disablePadding>
+              {sideBarAdministration.map((item, index) => (
+                <ListItem key={item.name} disablePadding>
                   <ListItemButton>
                     <ListItemIcon>
-                      {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                    <SvgIcon component={item.icon} inheritViewBox />
                     </ListItemIcon>
-                    <ListItemText primary={text} />
+                    <ListItemText primary={item.name} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+            <Divider />
+            <List>
+              {sideBarDashboard.map((item, index) => (
+                <ListItem key={item.name} disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon>
+                    <SvgIcon component={item.icon} inheritViewBox />
+                    </ListItemIcon>
+                    <ListItemText primary={item.name} />
                   </ListItemButton>
                 </ListItem>
               ))}
