@@ -15,11 +15,11 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 
--- Dumping database structure for tuticket_new
-CREATE DATABASE IF NOT EXISTS `tuticket_new` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `tuticket_new`;
+-- Dumping database structure for higher_vibrations
+CREATE DATABASE IF NOT EXISTS `higher_vibrations` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `higher_vibrations`;
 
--- Dumping structure for table tuticket_new.guests
+-- Dumping structure for table higher_vibrations.guests
 CREATE TABLE IF NOT EXISTS `guests` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   UNIQUE KEY `Index 1` (`id`)
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `guests` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table tuticket_new.users
+-- Dumping structure for table higher_vibrations.users
 CREATE TABLE IF NOT EXISTS `users` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `firstName` varchar(32) COLLATE utf8mb4_bin NOT NULL,

@@ -18,6 +18,7 @@ import { useRef, useState, useEffect } from 'react'
 import MenuAppBar from './components/Navbar.tsx';
 import Cookies from 'js-cookie';
 import { Box } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -50,6 +51,8 @@ function App() {
   const [initialized, setInitialized] = useState(false);
 
   const [sideBarOpened, setSideBarOpened] = useState(false);
+
+  const [sideBarAvailable, setSideBarAvailable] = useState(false);
 
   useEffect(() => {
     if(initialized)
@@ -97,15 +100,13 @@ function App() {
           setUserData(res.data.user);
           setUserLoaded(true);
           onCountryLoaded(res.data.countryIdx);
-
-          console.log("entry/");
-          console.log(res.data);
-          // #todo test
+          
           if(res.data.user == null)
           {
             Cookies.remove('sessionId');
             Cookies.remove('userId');
           }
+          console.log(res.data.user.role);
         })
       .catch(err => console.log(err));
   };
@@ -137,16 +138,32 @@ function App() {
     Cookies.set('sessionId', user.sessionId);
   }
 
+  function SideBar({ setSideBarAvailable, sideBarAvailable, userData, userLoaded, countryLoaded, countryIdx }) {
+    const location = useLocation();
+  
+    useEffect(() => {
+      console.log(location);
+      console.log(location.pathname.includes("dashboard/"));
+      if(location.pathname.includes("dashboard/"))
+      {
+        setSideBarAvailable(true);
+      }
+    }, [location]);
+
+    return (<MenuAppBar 
+      sideBarAvailable={sideBarAvailable}
+      sideBarOpened={sideBarOpened} setSideBarOpened={setSideBarOpened} 
+      userData={userData} setUserData={setUserData} 
+      userLoaded={userLoaded} onCountryLoaded={onCountryLoaded} 
+      countryLoaded={countryLoaded} countryIdx={countryIdx} 
+      />);
+  };  
+
   return (
     <BrowserRouter>
       <div style={{ height: '100vh' }}>
         <CssBaseline/>
-        <MenuAppBar 
-          sideBarOpened={sideBarOpened} setSideBarOpened={setSideBarOpened} 
-          userData={userData} setUserData={setUserData} 
-          userLoaded={userLoaded} onCountryLoaded={onCountryLoaded} 
-          countryLoaded={countryLoaded} countryIdx={countryIdx} 
-          />
+        <SideBar setSideBarAvailable={setSideBarAvailable} sideBarAvailable={sideBarAvailable} userData={userData} userLoaded={userLoaded} countryLoaded={countryLoaded} countryIdx={countryIdx} />
         <Routes>
             <Route path='/' element={<Home eventsData={eventsData} eventsLoaded={eventsLoaded}/> } />
             <Route path='/signin' element={<SignIn setUserData={setUserData} setUserLoaded={setUserLoaded} setUserCookies={setUserCookies} /> } />
@@ -154,6 +171,7 @@ function App() {
             <Route path='/verify_email' element={<VerifyEmail userData={userData} /> } />
             <Route path='/verify_email/action/:sessionId' element={<VerifyEmailAction userData={userData} setUserData={setUserData} /> } />
             <Route path="/dashboard" element={<DashboardContainer sideBarOpened={sideBarOpened}/>}>
+              
               <Route path='/dashboard/main' element={<Dashboard sideBarOpened={sideBarOpened} userData={userData} /> } />
               <Route path='/dashboard/profile' element={<Profile sideBarOpened={sideBarOpened} userData={userData} /> } />
             </Route>

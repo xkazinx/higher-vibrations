@@ -18,7 +18,7 @@ class data
             host: 'localhost',
             user: 'root',
             password: 'root',
-            database: 'tuticket_new',
+            database: 'higher_vibrations',
             port: 3305,
             connectionLimit: 100,
         };

@@ -126,7 +126,64 @@ export function SearchBar() {
   );
 }
 
-function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoaded, countryIdx, sideBarOpened, setSideBarOpened }) {
+function SideBar({ sideBarAvailable, drawerWidth, sideBarOpened, handleDrawerClose }) {
+
+  if(!sideBarAvailable)
+  {
+    return <></>;
+  }
+  
+  return (
+    <span>
+    <Drawer
+            sx={{
+              width: drawerWidth,
+              flexShrink: 0,
+              '& .MuiDrawer-paper': {
+                width: drawerWidth,
+                boxSizing: 'border-box',
+              },
+            }}
+            variant="persistent"
+            anchor="left"
+            open={sideBarOpened}
+          >
+            <DrawerHeader>
+              <IconButton onClick={handleDrawerClose}>
+                {<ChevronLeftIcon />}
+              </IconButton>
+            </DrawerHeader>
+            <Divider />
+            <List>
+              {['Dashboard', 'Item 2', 'Item 3'].map((text, index) => (
+                <ListItem key={text} disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon>
+                      {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                    </ListItemIcon>
+                    <ListItemText primary={text} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+            <Divider />
+            <List>
+              {['Profile', 'Item 2', 'Item 3'].map((text, index) => (
+                <ListItem key={text} disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon>
+                      {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                    </ListItemIcon>
+                    <ListItemText primary={text} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          </Drawer>
+          </span>);
+};  
+
+function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoaded, countryIdx, sideBarOpened, setSideBarOpened, sideBarAvailable }) {
   const router = useNavigate();
 
   /*useEffect(() => {
@@ -216,6 +273,22 @@ function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoa
     setSideBarOpened(false);
   };
 
+  function SideBarButton({sideBarAvailable, sideBarOpened, handleDrawerOpen})
+  {
+    if(!sideBarAvailable)
+      return <></>;
+
+    return (<IconButton
+        color="inherit"
+        aria-label="open drawer"
+        onClick={handleDrawerOpen}
+        edge="start"
+        sx={{ mr: 2, ...(sideBarOpened && { display: 'none' }) }}
+      >
+        <MenuIcon />
+    </IconButton>);
+  }
+
   return (
     <AppBar id="appbar" position="static" open={sideBarOpened} sx={{ 
       background: 'linear-gradient(-90deg, #d38312, #a83279)',
@@ -225,16 +298,7 @@ function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoa
        top: '0px' }}>
       <Container maxWidth="xl">
         <Toolbar sx={{  paddingLeft: '5vw', paddingRight: '5vw' }} disableGutters>
-          <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={handleDrawerOpen}
-              edge="start"
-              sx={{ mr: 2, ...(sideBarOpened && { display: 'none' }) }}
-            >
-              <MenuIcon />
-          </IconButton>
-
+          <SideBarButton sideBarAvailable={sideBarAvailable} sideBarOpened={sideBarOpened} handleDrawerOpen={handleDrawerOpen}/>
           <Link to="/">
             <Box
               component="img"
@@ -418,8 +482,7 @@ function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoa
                               <Typography textAlign="center">{setting.text}</Typography>
                             </MenuItem>
                           )
-                      ))
-                    }
+                      ))}
                     </Menu>
                 </span>
                 )
@@ -427,51 +490,8 @@ function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoa
             }
           </Box>
         </Toolbar>
-        <Drawer
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-          },
-        }}
-        variant="persistent"
-        anchor="left"
-        open={sideBarOpened}
-      >
-        <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
-            {<ChevronLeftIcon />}
-          </IconButton>
-        </DrawerHeader>
-        <Divider />
-        <List>
-          {['Dashboard', 'Item 2', 'Item 3'].map((text, index) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                </ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {['Profile', 'Item 2', 'Item 3'].map((text, index) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                </ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
+        <SideBar sideBarAvailable={sideBarAvailable} drawerWidth={drawerWidth} sideBarOpened={sideBarOpened} handleDrawerClose={handleDrawerClose} />
+        
       </Container>
     </AppBar>
   );
