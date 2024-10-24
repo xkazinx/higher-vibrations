@@ -5,8 +5,9 @@ import SignIn from './views/SignIn';
 import Register from './views/Register';
 import VerifyEmail from './views/VerifyEmail';
 import VerifyEmailAction from './views/VerifyEmailAction';
-import Dashboard from './views/Dashboard';
+import Dashboard from './views/DashboardIndex';
 import Profile from './views/DashboardProfile';
+import Admin from './views/DashboardAdmin';
 
 import {BrowserRouter, Routes, Route, Outlet} from 'react-router-dom';
 //import 'bootstrap/dist/css/bootstrap.min.css';
@@ -177,8 +178,9 @@ function App() {
             <Route path='/verify_email/action/:sessionId' element={<VerifyEmailAction userData={userData} setUserData={setUserData} /> } />
             <Route path="/dashboard" element={<DashboardContainer sideBarOpened={sideBarOpened}/>}>
               
-              <Route path='/dashboard/main' element={<Dashboard sideBarOpened={sideBarOpened} userData={userData} /> } />
+              <Route path='/dashboard/index' element={<Dashboard sideBarOpened={sideBarOpened} userData={userData} /> } />
               <Route path='/dashboard/profile' element={<Profile sideBarOpened={sideBarOpened} userData={userData} /> } />
+              <Route path='/dashboard/admin' element={<Admin sideBarOpened={sideBarOpened} userData={userData} /> } />
             </Route>
         </Routes>
       </div>

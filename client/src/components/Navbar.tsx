@@ -48,7 +48,8 @@ const drawerWidth = 240;
 
 const settings = [
   { text: 'Perfil', url: 'dashboard/profile', role: common.kUserRole }, 
-  { text: 'Dashboard', url: 'dashboard/main', role: common.kOrganizerRole },
+  { text: 'Dashboard', url: 'dashboard/index', role: common.kOrganizerRole },
+  { text: 'Administración', url: 'dashboard/admin', role: common.kAdminRole },
   { text: "Cerrar sesión", url: 'logout/', role: common.kUserRole }
 ];
 
