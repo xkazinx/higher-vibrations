@@ -22,14 +22,11 @@ import { useNavigate } from "react-router-dom";
 import Copyright from '../components/Copyright';
 import Error from '../components/Error'
 
-// TODO remove, this demo shouldn't need to reset the theme.
-
 const defaultTheme = createTheme();
   
 function SignIn({ setUserData, setUserLoaded, setUserCookies }) {
   const router = useNavigate();
 
-  
   const getErrorText = (id, err) =>
     {
         switch(id)
@@ -85,7 +82,6 @@ function SignIn({ setUserData, setUserLoaded, setUserCookies }) {
           console.log("Login success");
           setIsLoggingIn(false);
 
-          
           if(typeof res.data.errors !== 'undefined')
           {
             setErrorData(res.data.errors);

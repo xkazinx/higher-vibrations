@@ -22,7 +22,6 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import { useRef, useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
 import CircularProgress from '@mui/material/CircularProgress';
-import { makeStyles } from "@material-ui/core/styles";
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { common } from '../common/common.mjs'
@@ -38,10 +37,6 @@ import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
 import SvgIcon from '@mui/material/SvgIcon';
 
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
-
-
-//const pages = ['Products', 'Pricing', 'Blog'];
 const pages = [];
 
 const drawerWidth = 240;
@@ -131,7 +126,19 @@ export function SearchBar() {
   );
 }
 
-function SideBar({ sideBarAvailable, drawerWidth, sideBarOpened, handleDrawerClose }) {
+function SideBar({ sideBarAvailable,
+   drawerWidth, sideBarOpened, handleDrawerClose }) {
+
+  const router = useNavigate();
+
+  const handleOnClick = (type) => {
+    if(type === 'dashboard')
+      router('/dashboard/index');
+    else if(type === 'profile')
+      router('/dashboard/profile');
+    else if(type === 'admin')
+      router('/dashboard/admin');
+  };
 
   if(!sideBarAvailable)
   {
@@ -143,7 +150,7 @@ function SideBar({ sideBarAvailable, drawerWidth, sideBarOpened, handleDrawerClo
     {
       name: 'Dashboard',
       icon: InboxIcon,
-      url: '/dashboard/main',
+      url: '/dashboard/index',
     }
   ];
 
@@ -159,7 +166,7 @@ function SideBar({ sideBarAvailable, drawerWidth, sideBarOpened, handleDrawerClo
   const sideBarAdministration  = 
   [
     {
-      name: 'Administration',
+      name: 'Administración',
       icon:  MailIcon,
       url: '/dashboard/admin',
     }
@@ -188,40 +195,46 @@ function SideBar({ sideBarAvailable, drawerWidth, sideBarOpened, handleDrawerClo
             <Divider />
             <List>
               {sideBarProfile.map((item, index) => (
-                <ListItem key={item.name} disablePadding>
-                  <ListItemButton>
-                    <ListItemIcon>
-                    <SvgIcon component={item.icon} inheritViewBox />
-                    </ListItemIcon>
-                    <ListItemText primary={item.name} />
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </List>
-            <Divider />
-            <List>
-              {sideBarAdministration.map((item, index) => (
-                <ListItem key={item.name} disablePadding>
-                  <ListItemButton>
-                    <ListItemIcon>
-                    <SvgIcon component={item.icon} inheritViewBox />
-                    </ListItemIcon>
-                    <ListItemText primary={item.name} />
-                  </ListItemButton>
-                </ListItem>
+                <Box key={item.name} onClick={() => handleOnClick("profile")}>
+                  <ListItem disablePadding>
+                    <ListItemButton>
+                      <ListItemIcon>
+                      <SvgIcon component={item.icon} inheritViewBox />
+                      </ListItemIcon>
+                      <ListItemText primary={item.name} />
+                    </ListItemButton>
+                  </ListItem>
+                </Box>
               ))}
             </List>
             <Divider />
             <List>
               {sideBarDashboard.map((item, index) => (
-                <ListItem key={item.name} disablePadding>
-                  <ListItemButton>
-                    <ListItemIcon>
-                    <SvgIcon component={item.icon} inheritViewBox />
-                    </ListItemIcon>
-                    <ListItemText primary={item.name} />
-                  </ListItemButton>
-                </ListItem>
+                <Box key={item.name} onClick={() => handleOnClick("dashboard")}>
+                  <ListItem disablePadding>
+                    <ListItemButton>
+                      <ListItemIcon>
+                      <SvgIcon component={item.icon} inheritViewBox />
+                      </ListItemIcon>
+                      <ListItemText primary={item.name} />
+                    </ListItemButton>
+                  </ListItem>
+                </Box>
+              ))}
+            </List>
+            <Divider />
+            <List>
+              {sideBarAdministration.map((item, index) => (
+                <Box key={item.name} onClick={() => handleOnClick("admin")}>
+                  <ListItem disablePadding>
+                    <ListItemButton>
+                      <ListItemIcon>
+                      <SvgIcon component={item.icon} inheritViewBox />
+                      </ListItemIcon>
+                      <ListItemText primary={item.name} />
+                    </ListItemButton>
+                  </ListItem>
+                </Box>
               ))}
             </List>
           </Drawer>
@@ -246,18 +259,12 @@ function Navbar({ userData, setUserData, userLoaded, onCountryLoaded, countryLoa
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const [anchorElCountries, setAnchorElCountries] = React.useState<null | HTMLElement>(null);
 
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
-  };
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
+  
   const handleOpenCountriesMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElCountries(event.currentTarget);
-  };
-
-  const anchorElContriesOnChange = (ev) => {
-    console.log(ev);
   };
 
   const handleCloseNavMenu = () => {

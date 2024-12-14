@@ -4,7 +4,6 @@ class data
     {
         this.kDefaultCountryIndex = 0;
         this.kDomain = 'http://localhost:8081/';
-        //kDomain: 'https://tuticket.cl:8081/'
         this.kUserRole = 0;
         this.kOrganizerRole = 1;
         this.kAdminRole = 2;
@@ -19,7 +18,7 @@ class data
             user: 'root',
             password: 'root',
             database: 'higher_vibrations',
-            port: 3305,
+            port: 3306,
             connectionLimit: 100,
         };
     }

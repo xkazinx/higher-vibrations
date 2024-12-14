@@ -35,3 +35,81 @@ Add email sender with account verification
 redux
 
 https://github.com/brillout/awesome-react-components
+
+
+https://playcode.io/react
+
+import React from 'react';
+import { useState, useEffect } from 'react';
+
+function Component({ data, setData }) {
+  return (
+    <>
+      {Object.keys(data).map(function (key) {
+        return (
+          <p>
+            {key} {data[key]}
+          </p>
+        );
+      })}
+    </>
+  );
+}
+
+export function App(props) {
+  const [data, setData] = useState([]);
+
+  useEffect(function () {
+    setData([{ test: 'test1' }, { test: 'test2' }]);
+  }, []);
+  return (
+    <div className='App'>
+      <Component data={data} setData={setData} />
+      <h1>Hello React.</h1>
+      <h2>Start editing to see some magic happen!</h2>
+    </div>
+  );
+}
+
+// Log to console
+console.log('Hello console');
+
+Index
+  Remove countries
+  Create Higher Vibrations logo
+    Replace tuticket logo
+  Right menu
+    Administration
+    Dashboard 
+    Settings
+    Log out
+  Search
+    Argentina:
+      Everything in Argentina
+    City:
+      Everything in that City
+    Profile:
+      Events of that profile and the profile
+    Space:
+      Events of that space and the space
+    Activity:
+      Eg. Yoga:
+        Events of Yoga
+        Profiles that do Yoga
+        Spaces that do Yoga
+
+Administration 
+  User management
+  Page management (Profile / Space / Events)
+
+Dashboard
+  Add sub pages on left menu and on dashboard page:
+    Profiles / Dashboard
+    Spaces / Dashboard
+
+Subpage
+  Administration of page
+    
+Higher Vibrations Pages
+  Profile
+  Space

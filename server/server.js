@@ -63,6 +63,17 @@ function GetUserFromResult(qres)
 // Sessions are also stored in the database in case the server resets
 let _sessions = [];
 
+function GetUserIdx(id) 
+{
+    for(let i = 0; i < _sessions.length; ++i)
+    {
+        if(_sessions.at(i).id == id)
+            return i;
+    }
+
+    return -1;
+}
+
 // This function uses sync mysql queries because it needs to modify the 'req' variable,
 // same with any function that modifies the 'req' variable.
 async function GetUser(sessionId, req) 
@@ -400,6 +411,139 @@ app.post('/dashboard/profile', async (req, res) => {
 app.post('/events', (req, res) => {
     return res.json([{ title: 'title', price: 500 }]);
 });
+
+app.post('/dashboard/admin/getEmails', async (req, res) => {
+
+    console.log("getemails sess_id, user_id")
+    let user = undefined;
+    console.log(req.session.session_id);
+    console.log(req.session.user_id);
+    if(req.session.session_id && req.session.user_id)
+    {
+        user = await GetUser(req.session.session_id, req);
+        if(!user) {
+            return res.status(401).end();
+        }
+    }
+
+    if(!user)
+    {
+        return res.json({});
+    }
+
+    console.log("getemails_2")
+    {
+        const _ = async function()
+            {
+                let db = await dbConnection();
+
+                let [qres, fields] = await db.execute("SELECT email FROM `users`;");
+                
+                await db.end();
+
+                return res.json({
+                    emails: qres
+                });
+            }();
+    }
+});
+
+app.post('/dashboard/admin/getUserData', async (req, res) => {
+
+    console.log("getuserdata sess_id, user_id")
+    let user = undefined;
+    console.log(req.session.session_id);
+    console.log(req.session.user_id);
+    if(req.session.session_id && req.session.user_id)
+    {
+        user = await GetUser(req.session.session_id, req);
+        if(!user) {
+            return res.status(401).end();
+        }
+    }
+
+    if(!user || user.role != common.kAdminRole)
+    {
+        return res.json({});
+    }
+
+    const { email } = req.body;
+    console.log(email);
+    console.log("getuserdata2")
+
+    {
+        const _ = async function()
+            {
+                let db = await dbConnection();
+
+                let [qres, fields] = await db.execute("SELECT * FROM `users` WHERE `email` = ?;", [email]);
+                
+                await db.end();
+                return res.json(qres[0]);
+            }();
+    }
+});
+
+app.post('/dashboard/admin/saveUser', async (req, res) => {
+
+    let user = undefined;
+    
+    if(req.session.session_id && req.session.user_id)
+    {
+        user = await GetUser(req.session.session_id, req);
+        if(!user) {
+            return res.status(401).end();
+        }
+    }
+
+    if(!user || user.role != common.kAdminRole)
+    {
+        return res.json({ result: false });
+    }
+
+    const data = req.body;
+    
+    const idx = GetUserIdx(data.id);
+
+    if(idx >= 0) {
+        data.session_id = _sessions.at(idx).session_id;
+        _sessions[data.session_id] = data;
+    }
+
+    {
+        const _ = async function(data)
+        {
+            let db = await dbConnection();
+
+            console.log(data);
+            let arr = [];
+            let str = "";
+            {
+                let i = 0;
+                let values = Object.values(data);
+                for(let value in values)
+                {
+                    const key = Object.keys(data)[i];
+                    
+                    arr.push(data[key]);
+                    str += ' `' + key + '` = ?';
+
+                    if(++i != values.length)
+                        str += ",";
+                }
+
+                arr.push(data.id);
+            }
+            
+            let [qres, fields] = await db.execute("UPDATE `users` SET " + str + " WHERE `id` = ?;", arr);
+            
+            await db.end();
+            
+            return res.json({ result: true });
+        }(data);
+    }
+});
+
 
 app.post('/logout', async (req, res) => {
     console.log("/logout: " + req.session.session_id);
